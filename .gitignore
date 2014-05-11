@@ -1,0 +1,7 @@
+public
+node_modules
+bower_components
+build
+config.js
+
+*.log

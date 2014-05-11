@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manula Tracker</title>
+    <script src="http://api-maps.yandex.ru/2.1-dev/?load=package.full&lang=ru-RU"
+            type="text/javascript"></script>
+    <!-- build:js app-min.js -->
+    <script src="../bower_components/requirejs/require.js"></script>
+    <script src="require.config.js"></script>
+    <!-- /build -->
+    <link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+<div id="map"></div>
+<script>
+    ymaps.ready(function () {
+        require(['app'], function (app) {
+            app.start();
+        });
+    });
+</script>
+</body>
+</html>

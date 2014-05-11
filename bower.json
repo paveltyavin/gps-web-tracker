@@ -1,0 +1,20 @@
+{
+  "name": "gps-web-tracker",
+  "version": "0.1.1",
+  "authors": [
+    "Pavel Tyavin <pavel@tyavin.name>"
+  ],
+  "license": "MIT",
+  "private": true,
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "build"
+  ],
+  "dependencies": {
+    "almond":"~0.2.9",
+    "requirejs": "~2.1.11",
+    "socket.io-client": "~0.9.16"
+  }
+}
