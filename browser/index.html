@@ -7,13 +7,14 @@
     <!-- build:template
     <script src="app-<%= revision %>.js"></script>
     <meta name="date.modified" content="<%= modified %>">
+    <link rel="stylesheet" href="style-<%= revision %>.css"/>
     /build -->
 
     <!-- build:remove -->
     <script src="../bower_components/requirejs/require.js"></script>
     <script src="require.config.js"></script>
-    <!-- /build -->
     <link rel="stylesheet" href="style.css"/>
+    <!-- /build -->
 </head>
 <body>
 <div id="map"></div>

@@ -2,6 +2,9 @@ module.exports = function (grunt) {
 
   var revision = grunt.option('revision') || '12345';
   var now = new Date;
+  var cssminFiles = {};
+  cssminFiles['build/style-' + revision + '.css'] = ['browser/style.css'];
+
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
     requirejs: {
@@ -21,9 +24,7 @@ module.exports = function (grunt) {
     },
     cssmin: {
       combine: {
-        files: {
-          'build/style.css': 'browser/style.css'
-        }
+        files: cssminFiles
       }
     },
     processhtml: {
