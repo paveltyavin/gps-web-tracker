@@ -20,9 +20,7 @@
 <div id="map"></div>
 <!-- build:template
 <script>
-    Raven.config('http://2c4115a67dcd49e2bfa19f9db18a99b3@sentry.tyavin.name/5', {
-        whitelistUrls: [/tracker\.tyavin\.name/]
-    }).install();
+    Raven.config('http://2c4115a67dcd49e2bfa19f9db18a99b3@sentry.tyavin.name/5').install();
     try {
         ymaps.ready(function () {require(['app'], function (app) {app.start()})});
     } catch (err) {
