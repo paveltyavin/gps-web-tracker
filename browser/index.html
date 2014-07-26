@@ -4,7 +4,12 @@
     <title>Manula Tracker</title>
     <script src="http://api-maps.yandex.ru/2.1-dev/?load=package.full&lang=ru-RU"
             type="text/javascript"></script>
-    <!-- build:js app-min.js -->
+    <!-- build:template
+    <script src="app-<%= revision %>.js"></script>
+    <meta name="date.modified" content="<%= modified %>">
+    /build -->
+
+    <!-- build:remove -->
     <script src="../bower_components/requirejs/require.js"></script>
     <script src="require.config.js"></script>
     <!-- /build -->
@@ -12,12 +17,23 @@
 </head>
 <body>
 <div id="map"></div>
+<!-- build:template
 <script>
-    ymaps.ready(function () {
-        require(['app'], function (app) {
-            app.start();
-        });
-    });
+    Raven.config('http://2c4115a67dcd49e2bfa19f9db18a99b3@sentry.tyavin.name/5', {
+        whitelistUrls: [/tracker\.tyavin\.name/]
+    }).install();
+    try {
+        ymaps.ready(function () {require(['app'], function (app) {app.start()})});
+    } catch (err) {
+        Raven.captureException(err);
+    }
 </script>
+<!-- /build -->
+
+<!-- build:remove -->
+<script>
+    ymaps.ready(function () {require(['app'], function (app) {app.start()})});
+</script>
+<!-- /build -->
 </body>
 </html>
