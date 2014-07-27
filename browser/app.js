@@ -1,7 +1,6 @@
 define('app', [
-  'engine.io-client',
-  'config'
-], function (eio, config) {
+  'socket.io-client', 'config'
+], function (io, config) {
   if (!ymaps) {
     throw 'Yandex maps error';
   }
@@ -9,10 +8,10 @@ define('app', [
   var controller = {
     initMap: function () {
       var map = new ymaps.Map('map', {
-          center: [55.74954, 37.621587],
-          zoom: 10,
-          controls: ['zoomControl', 'searchControl', 'typeSelector', 'rulerControl']
-        });
+        center: [55.74954, 37.621587],
+        zoom: 10,
+        controls: ['zoomControl', 'searchControl', 'typeSelector', 'rulerControl']
+      });
       this.map = map;
     },
 
@@ -28,15 +27,15 @@ define('app', [
 
     initSocket: function () {
       var _this = this;
-      eio(config.serverUrl + ':' + config.browserPort)
-        .on('disconnect', function () {
+      io(config.serverUrl + ':' + config.browserPort).on('disconnect',function () {
           _this.map.geoObjects.each(function (placemark) {
             if (placemark.id) {
               _this.map.geoObjects.remove(placemark);
             }
           });
-        })
-        .on('point', function (data) {
+        }).on('hello',function (data) {
+          console.log('hello');
+        }).on('point', function (data) {
 
           if (data) {
             var placemark = null;

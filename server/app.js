@@ -7,7 +7,7 @@ var jot = require('json-over-tcp');
 
 // Create server for devices
 var deviceServer = jot.createServer(config.devicePort);
-deviceServer.on('connection',function (socket) {
+deviceServer.on('connection', function (socket) {
   socket.on('data', function (data) {
     logger.log('debug', 'device message: ', data);
     if ((data.lat) && (data.lng) && (data.id)) {
@@ -19,12 +19,19 @@ deviceServer.on('connection',function (socket) {
 deviceServer.listen(config.devicePort);
 
 //Create server for browser
-var eio = require('engine.io');
-var server = eio.listen(config.browserPort, {
-  logger: logger
+var io = require('socket.io');
+var browserServer = io.listen(config.browserPort, {
+  logger: logger,
+  origins: '*:*  127.0.0.1:* http:127.0.0.1:*'
 });
-server.on('connection', function (socket) {
-  socket.emit('hello', 'hello');
+browserServer.on('connection', function (socket) {
+  logger.log('debug', 'connection');
+  var f = function () {
+    logger.log('debug', 'hello');
+    socket.emit('hello', 'hello');
+  };
+  setInterval(f, 5000);
+
   eventEmitter.on('point', function (data) {
     logger.log('debug', 'point: ', data);
     socket.emit('point', data);
