@@ -4,6 +4,8 @@ var eventEmitter = new events.EventEmitter();
 var config = require('./config');
 var logger = require('./logger');
 var jot = require('json-over-tcp');
+var io = require('socket.io');
+var http = require('http');
 
 // Create server for devices
 var deviceServer = jot.createServer(config.devicePort);
@@ -19,18 +21,17 @@ deviceServer.on('connection', function (socket) {
 deviceServer.listen(config.devicePort);
 
 //Create server for browser
-var io = require('socket.io');
-var browserServer = io.listen(config.browserPort, {
-  logger: logger,
-  origins: '*:*  127.0.0.1:* http:127.0.0.1:*'
-});
+var app = http.createServer();
+app.listen(config.browserPort);
+
+var browserServer = io(app, {
+    logger: logger
+  });
+
 browserServer.on('connection', function (socket) {
-  logger.log('debug', 'connection');
-  var f = function () {
-    logger.log('debug', 'hello');
-    socket.emit('hello', 'hello');
-  };
-  setInterval(f, 5000);
+  socket.on('map', function(data){
+    logger.log('debug', 'map: ', data);
+  });
 
   eventEmitter.on('point', function (data) {
     logger.log('debug', 'point: ', data);

@@ -17,7 +17,7 @@
     "grunt-processhtml": "~0.3.3",
     "http-server": "~0.6.1",
     "json-over-tcp": "~0.3.2",
-    "socket.io": "~0.9.16",
+    "socket.io": "^1.0.6",
     "winston": "~0.7.3"
   },
   "repository": {
