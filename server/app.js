@@ -19,10 +19,12 @@ deviceServer.on('connection',function (socket) {
 deviceServer.listen(config.devicePort);
 
 //Create server for browser
-var io = require('socket.io').listen(config.browserPort, {
+var eio = require('engine.io');
+var server = eio.listen(config.browserPort, {
   logger: logger
 });
-io.sockets.on('connection', function (socket) {
+server.on('connection', function (socket) {
+  socket.emit('hello', 'hello');
   eventEmitter.on('point', function (data) {
     logger.log('debug', 'point: ', data);
     socket.emit('point', data);
