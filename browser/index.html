@@ -5,15 +5,15 @@
     <script src="http://api-maps.yandex.ru/2.1-dev/?load=package.full&lang=ru-RU"
             type="text/javascript"></script>
     <!-- build:template
-    <script src="app-<%= revision %>.js"></script>
+    <script src="scripts-<%= revision %>.js"></script>
     <meta name="date.modified" content="<%= modified %>">
-    <link rel="stylesheet" href="style-<%= revision %>.css"/>
+    <link rel="stylesheet" href="styles-<%= revision %>.css"/>
     /build -->
 
     <!-- build:remove -->
     <script src="../bower_components/requirejs/require.js"></script>
     <script src="require.config.js"></script>
-    <link rel="stylesheet" href="style.css"/>
+    <link rel="stylesheet" href="styles.css"/>
     <!-- /build -->
 </head>
 <body>
@@ -22,7 +22,7 @@
 <script>
     Raven.config('http://2c4115a67dcd49e2bfa19f9db18a99b3@sentry.tyavin.name/5').install();
     try {
-        ymaps.ready(function () {require(['app'], function (app) {app.start()})});
+        ymaps.ready(function () {require(['controller'], function (controller) {controller.start()})});
     } catch (err) {
         Raven.captureException(err);
     }
@@ -31,7 +31,7 @@
 
 <!-- build:remove -->
 <script>
-    ymaps.ready(function () {require(['app'], function (app) {app.start()})});
+    ymaps.ready(function () {require(['controller'], function (controller) {controller.start()})});
 </script>
 <!-- /build -->
 </body>

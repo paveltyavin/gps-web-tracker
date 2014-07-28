@@ -3,7 +3,7 @@ module.exports = function (grunt) {
   var revision = grunt.option('revision') || '12345';
   var now = new Date;
   var cssminFiles = {};
-  cssminFiles['build/style-' + revision + '.css'] = ['browser/style.css'];
+  cssminFiles['build/styles-' + revision + '.css'] = ['browser/styles.css'];
 
   grunt.initConfig({
     pkg: grunt.file.readJSON('package.json'),
@@ -12,11 +12,12 @@ module.exports = function (grunt) {
         options: {
           baseUrl: "./browser",
           mainConfigFile: "./browser/require.config.js",
-          out: "build/app-"+revision+".js",
+          out: "build/scripts-"+revision+".js",
 //          optimize:'none',
           name: "../bower_components/almond/almond",
           include: [
-            'app',
+            'controller',
+            'view',
             '../bower_components/raven-js/dist/raven'
           ]
         }
