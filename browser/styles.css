@@ -7,3 +7,19 @@ body {
     margin: 0;
     padding: 0;
 }
+
+.panelControl {
+    background-color: #fff;
+    padding: 10px;
+    display: inline-block;
+    border-radius: 2px;
+    width: 300px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}
+.panelControl .address{
+    font-size: 0.8em;
+}
+
+.panelControl .cords{
+    font-size: 0.8em;
+}

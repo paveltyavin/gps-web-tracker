@@ -35,15 +35,30 @@ var browserServer = io(app, {
 browserServer.on('connection', function (socket) {
   socket.on('add:marker', function (data) {
     var markerId = data.id;
-    markers[markerId] = {
-      id:markerId,
-      lat:data.lat,
-      lng:data.lng,
-      name:data.name,
-      text:data.text
-    };
+    if (!markerId){
+      return
+    }
+    var i,key;
+    var keys = ['lat', 'lng', 'text', 'name'];
+    var marker = markers[markerId];
+    if (marker === undefined ) {
+      marker = {id: markerId};
+      for (i=0; i < keys.length; i++) {
+        key = keys[i];
+        marker[key] = data[key];
+      }
+      markers[markerId] = marker;
+    } else {
+      for (i=0; i < keys.length; i++) {
+        key = keys[i];
+        if (data[key] !== undefined) {
+          marker[key] = data[key];
+        }
+      }
+    }
+
     logger.log('debug', 'add marker markers: ', markers);
-    socket.broadcast.emit('add:marker', markers[markerId]);
+    socket.broadcast.emit('add:marker', marker);
   });
 
   socket.on('remove:marker', function (markerId) {

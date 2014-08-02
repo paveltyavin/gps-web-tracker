@@ -16,6 +16,9 @@
     "almond": "~0.2.9",
     "raven-js": "1.1.15",
     "requirejs": "~2.1.11",
-    "socket.io-client": "~1.0.6"
+    "socket.io-client": "~1.0.6",
+    "hbs": "~0.8.1",
+    "jquery": "~2.1.0",
+    "marionette": "~2.1.0"
   }
 }

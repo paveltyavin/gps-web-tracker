@@ -1,6 +1,6 @@
 module.exports = function (grunt) {
 
-  var revision = grunt.option('revision') || '12345';
+  var revision = grunt.option('revision') || (Math.random() + 1).toString(36).substring(7);
   var now = new Date;
   var cssminFiles = {};
   cssminFiles['build/styles-' + revision + '.css'] = ['browser/styles.css'];
@@ -28,6 +28,9 @@ module.exports = function (grunt) {
         files: cssminFiles
       }
     },
+    clean: {
+      build: 'build/**'
+    },
     processhtml: {
       options: {
         data: {
@@ -44,10 +47,11 @@ module.exports = function (grunt) {
     }
   });
 
+  grunt.loadNpmTasks('grunt-contrib-clean');
   grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.loadNpmTasks('grunt-contrib-requirejs');
   grunt.loadNpmTasks('grunt-processhtml');
 
-  grunt.registerTask('default', ['requirejs', 'cssmin', 'processhtml']);
+  grunt.registerTask('default', ['clean', 'requirejs', 'cssmin', 'processhtml']);
 
 };

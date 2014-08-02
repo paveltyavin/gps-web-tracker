@@ -1,6 +1,6 @@
 define('controller', [
-  'socket.io-client', 'config', 'view'
-], function (io, config, view) {
+  'jquery', 'marionette', 'socket.io-client', 'config', 'view'
+], function ($, marionette, io, config, view) {
   if (!ymaps) {
     throw 'Yandex maps error';
   }
@@ -12,7 +12,7 @@ define('controller', [
       var map = new ymaps.Map('map', {
         center: mapCenter,
         zoom: 10,
-        controls: ['zoomControl', 'searchControl', 'typeSelector', 'rulerControl']
+        controls: ['typeSelector', 'rulerControl']
       });
       controller.map = map;
     },
@@ -52,8 +52,9 @@ define('controller', [
     },
     addMarkers: function (data) {
       var i;
-      for (i in controller.markers){
-        view.removeMarker(i);
+      var markerIds = Object.keys(controller.markers);
+      for (i in markerIds){
+        controller.removeMarker(markerIds[i]);
       }
 
       controller.markers = {};
@@ -72,10 +73,9 @@ define('controller', [
       }
     },
     removeMarker: function (markerId) {
-      var marker = controller.markers[markerId];
-      view.removeMarker(marker)
+      view.removeMarker(controller.markers[markerId]);
+      delete controller.markers[markerId];
     },
-
 
     initEvents: function () {
       controller.map.events.add('add:marker', function (ev) {
@@ -90,24 +90,23 @@ define('controller', [
       });
 
       controller.map.events.add('update:marker', function (ev) {
+        var originalData = ev.originalEvent;
         var data = {
-          id: ev.originalEvent.id,
-          lat: ev.originalEvent.lat,
-          lng: ev.originalEvent.lng
+          id: originalData.id
         };
+        $.each(['name', 'lat', 'lng', 'text'], function(i,key){
+          if (originalData[key]){
+            data[key] = originalData[key];
+          }
+        });
         controller.socket.emit('add:marker', data);
       });
 
       controller.map.events.add('remove:marker', function (ev) {
         var markerId = ev.originalEvent.id;
-        var marker = controller.markers[markerId];
-        view.removeMarker(marker);
+        controller.removeMarker(markerId);
         controller.socket.emit('remove:marker', markerId);
       })
-    },
-
-    initControls: function () {
-      view.renderBox();
     },
 
     start: function () {
@@ -117,7 +116,6 @@ define('controller', [
       this.initEvents();
 
       view.init(controller.map);
-      this.initControls();
     }
   };
 
