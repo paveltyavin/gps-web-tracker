@@ -19,6 +19,8 @@
     "socket.io-client": "~1.0.6",
     "hbs": "~0.8.1",
     "jquery": "~2.1.0",
-    "marionette": "~2.1.0"
+    "marionette": "~2.1.0",
+    "backbone.modelbinder": "~1.0.5",
+    "jquery-simple-color": "~1.2.1"
   }
 }

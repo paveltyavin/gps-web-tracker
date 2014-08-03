@@ -31,7 +31,9 @@
 
 <!-- build:remove -->
 <script>
-    ymaps.ready(function () {require(['controller'], function (controller) {controller.start()})});
+    ymaps.ready(function () {require(['app'], function (app) {
+        app.start()
+    })});
 </script>
 <!-- /build -->
 </body>

@@ -3,11 +3,18 @@ var eventEmitter = new events.EventEmitter();
 
 var config = require('./config');
 var logger = require('./logger');
+var _ = require('underscore');
 var jot = require('json-over-tcp');
 var io = require('socket.io');
 var http = require('http');
 var points = {};
-var markers = {};
+var markers = {
+  start: {
+    id: 'start',
+    lat: 55.74954,
+    lng: 37.62158
+  }
+};
 
 // Create server for devices
 var deviceServer = jot.createServer(config.devicePort);
@@ -35,21 +42,21 @@ var browserServer = io(app, {
 browserServer.on('connection', function (socket) {
   socket.on('add:marker', function (data) {
     var markerId = data.id;
-    if (!markerId){
+    if (!markerId) {
       return
     }
-    var i,key;
+    var i, key;
     var keys = ['lat', 'lng', 'text', 'name'];
     var marker = markers[markerId];
-    if (marker === undefined ) {
+    if (marker === undefined) {
       marker = {id: markerId};
-      for (i=0; i < keys.length; i++) {
+      for (i = 0; i < keys.length; i++) {
         key = keys[i];
         marker[key] = data[key];
       }
       markers[markerId] = marker;
     } else {
-      for (i=0; i < keys.length; i++) {
+      for (i = 0; i < keys.length; i++) {
         key = keys[i];
         if (data[key] !== undefined) {
           marker[key] = data[key];
@@ -57,8 +64,23 @@ browserServer.on('connection', function (socket) {
       }
     }
 
-    logger.log('debug', 'add marker markers: ', markers);
+    logger.log('debug', 'add markerId, markers: ',markerId, markers);
     socket.broadcast.emit('add:marker', marker);
+  });
+
+  socket.on('update:marker', function (data) {
+    var markerId = data.id;
+    var i, key;
+    var keys = ['lat', 'lng', 'text', 'name'];
+    var marker = markers[markerId];
+    for (i = 0; i < keys.length; i++) {
+      key = keys[i];
+      if (data[key] !== undefined) {
+        marker[key] = data[key];
+      }
+    }
+    logger.log('debug', 'update markerId, markers: ',markerId, markers);
+    socket.broadcast.emit('update:marker', marker);
   });
 
   socket.on('remove:marker', function (markerId) {
@@ -67,13 +89,18 @@ browserServer.on('connection', function (socket) {
     socket.broadcast.emit('remove:marker', markerId)
   });
 
-  eventEmitter.on('point', function (data) {
+  var addPoint = function (data) {
     logger.log('debug', 'point: ', data);
     socket.emit('add:point', data);
+  };
+  eventEmitter.on('point',addPoint);
+
+  socket.on('disconnect', function(socket){
+    eventEmitter.removeListener('point', addPoint);
   });
 
-  socket.emit('add:points', points);
-  socket.emit('add:markers', markers);
+  socket.emit('add:points', _.values(points));
+  socket.emit('add:markers', _.values(markers));
   setInterval(function () {
     var beforeNow = new Date(new Date - config.pointTTL);
     for (var pointId in points) {
@@ -82,7 +109,6 @@ browserServer.on('connection', function (socket) {
         delete points[pointId];
       }
     }
-    socket.emit('add:points', points);
-    socket.emit('add:markers', markers);
+    socket.emit('add:points', _.values(points));
   }, config.pointCheckTime);
 });
