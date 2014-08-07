@@ -13,6 +13,9 @@ define('models', [
       console.log('sync ', method);
       socket.emit(method + ':' + model.name, model.toJSON());
     },
+    defaults:{
+      color: 'black'
+    },
     initialize: function () {
       var _this = this;
       _this.on('change', function () {
@@ -71,7 +74,7 @@ define('models', [
           iconContent: model.get('name')
         }
       }, {
-        preset: 'islands#blackStretchyIcon',
+        preset: 'islands#'+ model.get('color') + 'StretchyIcon',
         draggable: true
       });
       geoObject.events.add('dragend', function () {

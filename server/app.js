@@ -46,7 +46,7 @@ browserServer.on('connection', function (socket) {
       return
     }
     var i, key;
-    var keys = ['lat', 'lng', 'text', 'name'];
+    var keys = ['lat', 'lng', 'text', 'name', 'color'];
     var marker = markers[markerId];
     if (marker === undefined) {
       marker = {id: markerId};
@@ -71,7 +71,7 @@ browserServer.on('connection', function (socket) {
   socket.on('update:marker', function (data) {
     var markerId = data.id;
     var i, key;
-    var keys = ['lat', 'lng', 'text', 'name'];
+    var keys = ['lat', 'lng', 'text', 'name', 'color'];
     var marker = markers[markerId];
     for (i = 0; i < keys.length; i++) {
       key = keys[i];

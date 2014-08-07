@@ -1,8 +1,9 @@
 define('map', [
   'reqres',
+  'vent',
   'marionette',
   'hbs!templates/panelControl'
-], function(reqres, marionette, panelControlTemplate){
+], function(reqres, vent, marionette, panelControlTemplate){
 
   if (!ymaps) {
     throw 'Yandex maps error';
@@ -31,7 +32,8 @@ define('map', [
     },
 
     _onGetChildElement: function (parentDomContainer) {
-      $(parentDomContainer).append(panelControlTemplate())
+      $(parentDomContainer).append(panelControlTemplate());
+      vent.trigger('panel:ready');
     }
   });
 
