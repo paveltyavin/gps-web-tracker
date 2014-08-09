@@ -8,7 +8,14 @@ body {
     padding: 0;
 }
 
-.panelControl {
+#panel {
+    position: fixed;
+    right: 10px;
+    top: 10px;
+    display: block;
+}
+
+#panel {
     background-color: #fff;
     padding: 10px;
     display: inline-block;
@@ -16,19 +23,8 @@ body {
     width: 300px;
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
 }
-.panelControl .address{
-    font-size: 0.8em;
-}
 
-.panelControl .cords{
-    font-size: 0.8em;
-}
-
-.simpleColorContainer{
-    display: inline-block;
-}
-
-input{
+input[type=text]{
     border: 1px solid #CCC;
     color: #444;
     height: 14px;
@@ -38,11 +34,22 @@ input{
     margin-top: 2px;
     outline: 0 none;
     padding: 5px 0px 5px 5px;
-    width: 260px;
     border-radius: 4px;
     -webkit-border-radius: 4px;
     -moz-border-radius: 4px;
     -webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
     -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
+}
+
+.markerPanel [name='name'] {
+    width: 230px;
+}
+.simpleColorContainer {
+    display: inline-block;
+}
+
+[name='delete'] {
+    vertical-align: middle;
+    display: inline-block;
 }

@@ -16,6 +16,29 @@ var markers = {
   }
 };
 
+var polygons = {
+  start: {
+    id: 'start',
+    coordinates:[[
+      [55.74954, 37.52158],
+      [55.64954, 37.52158],
+      [55.74954, 37.42158],
+      [55.64954, 37.42158]
+    ],[]]
+  }
+};
+var lines = {
+  start: {
+    id: 'start',
+    coordinates:[
+      [55.54954, 37.82158],
+      [55.44954, 37.42158],
+      [55.64954, 37.22158],
+      [55.44954, 37.12158]
+    ]
+  }
+};
+
 // Create server for devices
 var deviceServer = jot.createServer(config.devicePort);
 deviceServer.on('connection', function (socket) {
@@ -39,54 +62,67 @@ var browserServer = io(app, {
   logger: logger
 });
 
-browserServer.on('connection', function (socket) {
-  socket.on('add:marker', function (data) {
-    var markerId = data.id;
-    if (!markerId) {
+var addFunction = function(model, socket){
+  var objects;
+  if (model=='marker'){
+    objects = markers;
+  }
+  if (model=='polygon'){
+    objects = polygons;
+  }
+  return function(data){
+    var objectId = data.id;
+    if (!objectId) {
       return
     }
-    var i, key;
-    var keys = ['lat', 'lng', 'text', 'name', 'color'];
-    var marker = markers[markerId];
-    if (marker === undefined) {
-      marker = {id: markerId};
-      for (i = 0; i < keys.length; i++) {
-        key = keys[i];
-        marker[key] = data[key];
-      }
-      markers[markerId] = marker;
+    var object = objects[objectId];
+    if (object === undefined) {
+      objects[objectId] = data;
     } else {
-      for (i = 0; i < keys.length; i++) {
-        key = keys[i];
-        if (data[key] !== undefined) {
-          marker[key] = data[key];
-        }
-      }
+      objects[objectId] = _.extend(object, data);
     }
 
-    logger.log('debug', 'add markerId, markers: ',markerId, markers);
-    socket.broadcast.emit('add:marker', marker);
+    logger.log('debug', 'add objectId: ',objectId);
+    socket.broadcast.emit('add:'+model, objects[objectId]);
+  }
+};
+
+var updateFunction = function(model, socket){
+  var objects;
+  if (model=='marker'){
+    objects = markers;
+  }
+  if (model=='polygon'){
+    objects = polygons;
+  }
+  return function (data) {
+    var objectId = data.id;
+    objects[objectId] = data;
+    logger.log('debug', 'update ' + model + 'Id: ',objectId);
+    socket.broadcast.emit('update:'+model, objects[objectId]);
+  }
+}
+
+browserServer.on('connection', function (socket) {
+  socket.on('add:marker', addFunction('marker', socket));
+  socket.on('add:polygon', addFunction('polygon', socket));
+
+  socket.on('update:marker', updateFunction('marker', socket));
+  socket.on('update:polygon', updateFunction('polygon', socket));
+
+  socket.on('delete:marker', function (data) {
+    var objectId = data.id;
+    delete markers[objectId];
+    logger.log('debug', 'delete marker: ', objectId);
+    socket.broadcast.emit('delete:marker', objectId)
   });
 
-  socket.on('update:marker', function (data) {
-    var markerId = data.id;
-    var i, key;
-    var keys = ['lat', 'lng', 'text', 'name', 'color'];
-    var marker = markers[markerId];
-    for (i = 0; i < keys.length; i++) {
-      key = keys[i];
-      if (data[key] !== undefined) {
-        marker[key] = data[key];
-      }
-    }
-    logger.log('debug', 'update markerId, markers: ',markerId, markers);
-    socket.broadcast.emit('update:marker', marker);
-  });
 
-  socket.on('remove:marker', function (markerId) {
-    logger.log('debug', 'remove marker: ', markerId);
-    delete markers[markerId];
-    socket.broadcast.emit('remove:marker', markerId)
+  socket.on('delete:polygon', function (data) {
+    var objectId = data.id;
+    delete polygons[objectId];
+    logger.log('debug', 'delete polygon: ', objectId);
+    socket.broadcast.emit('delete:polygon', objectId)
   });
 
   var addPoint = function (data) {
@@ -99,8 +135,10 @@ browserServer.on('connection', function (socket) {
     eventEmitter.removeListener('point', addPoint);
   });
 
-  socket.emit('add:points', _.values(points));
-  socket.emit('add:markers', _.values(markers));
+  socket.emit('set:points', _.values(points));
+  socket.emit('set:markers', _.values(markers));
+  socket.emit('set:polygons', _.values(polygons));
+  socket.emit('set:lines', _.values(lines));
   setInterval(function () {
     var beforeNow = new Date(new Date - config.pointTTL);
     for (var pointId in points) {
@@ -109,6 +147,6 @@ browserServer.on('connection', function (socket) {
         delete points[pointId];
       }
     }
-    socket.emit('add:points', _.values(points));
+    socket.emit('set:points', _.values(points));
   }, config.pointCheckTime);
 });
