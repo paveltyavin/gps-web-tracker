@@ -10,7 +10,8 @@ define('views/panel', [
 
   var colorName2Hex = Colors.colorName2Hex;
   var hex2ColorName = Colors.hex2ColorName;
-  var colors = _.map(_.keys(hex2ColorName), function(x){return x.replace('#', '');});
+  var colors = Colors.colors;
+
 
   var colorConverter = function (direction, value, attribute, model, els) {
     if (direction === "ModelToView") {
@@ -21,27 +22,8 @@ define('views/panel', [
     }
   };
 
-  var MarkerView = marionette.ItemView.extend({
-    template: markerPanelTemplate,
-    className: 'markerPanel',
-    model: models.Marker,
-    bindings: {
-      name: '[name=name]',
-      color: {
-        selector: '[name=color]',
-        converter: colorConverter
-      }
-    },
-    events: {
-      'click .delete': 'onDelete'
-    },
-    onDelete: function () {
-      this.model.destroy();
-    },
-
-    onShow: function () {
-      this.modelBinder = new ModelBinder();
-      this.modelBinder.bind(this.model, this.el, this.bindings);
+  var PanelView = marionette.ItemView.extend({
+    initJSC: function () {
       this.$el.find('input[name=\'color\']').simpleColor({
         columns: 4,
         boxWidth: 16,
@@ -66,8 +48,33 @@ define('views/panel', [
     }
   });
 
+  var MarkerView = PanelView.extend({
+    template: markerPanelTemplate,
+    className: 'markerPanel',
+    model: models.Marker,
+    bindings: {
+      name: '[name=name]',
+      color: {
+        selector: '[name=color]',
+        converter: colorConverter
+      }
+    },
+    events: {
+      'click .delete': 'onDelete'
+    },
+    onDelete: function () {
+      this.model.destroy();
+    },
 
-  var PolygonView = marionette.ItemView.extend({
+    onShow: function () {
+      this.modelBinder = new ModelBinder();
+      this.modelBinder.bind(this.model, this.el, this.bindings);
+      this.initJSC();
+    }
+  });
+
+
+  var PolygonView = PanelView.extend({
     template: polygonPanelTemplate,
     className: 'polygonPanel',
     model: models.Polygon,
@@ -98,30 +105,10 @@ define('views/panel', [
     onShow: function () {
       this.modelBinder = new ModelBinder();
       this.modelBinder.bind(this.model, this.el, this.bindings);
-      this.$el.find('input[name=\'color\']').simpleColor({
-        columns: 4,
-        boxWidth: 16,
-        boxHeight: 16,
-        colors: colors,
-        cellWidth: 16,
-        cellHeight: 16,
-        chooserCSS: {
-          'border': '1px solid #000',
-          'margin': '5px 0 0 0',
-          'top': +16,
-          'left': -56,
-          'position': 'absolute'
-        },
-        displayCSS: {
-          'border': '1px solid #444',
-          'border-radius': '3px',
-          'vertical-align': 'middle',
-          'display': 'inline-block'
-        }
-      });
+      this.initJSC();
     }
   });
-  var LineView = marionette.ItemView.extend({
+  var LineView = PanelView.extend({
     template: markerPanelTemplate
   });
 

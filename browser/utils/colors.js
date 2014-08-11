@@ -1,4 +1,4 @@
-define('utils/colors', [], function(){
+define('utils/colors', ['underscore'], function(_){
   var colorName2Hex = {
     'green': '#56db40',
     'blue': '#1e98ff',
@@ -26,8 +26,11 @@ define('utils/colors', [], function(){
     }
   }
 
+  var colors = _.map(_.keys(hex2ColorName), function(x){return x.replace('#', '');});
+
   return {
     colorName2Hex: colorName2Hex,
-    hex2ColorName: hex2ColorName
+    hex2ColorName: hex2ColorName,
+    colors: colors
   }
 });
