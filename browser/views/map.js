@@ -84,7 +84,7 @@ define('views/map', [
       this.listenTo(model, 'change:color', function () {
         var color = model.get('color');
         var hexColor = colorName2Hex[color];
-        this.geoObject.options.set('strokeColor',  hexColor);
+        this.geoObject.options.set('strokeColor', hexColor);
       });
 
       geoObject.events.add('editorstatechange', function () {
@@ -92,14 +92,17 @@ define('views/map', [
         model.set('coordinates', coordinates);
       });
 
-      this.listenTo(vent, 'start:edit:polygon', function (modelId) {
-        if (model.id == modelId) {
-          geoObject.editor.startEditing();
-        }
+      map.events.add('click', function () {
+        geoObject.editor.stopEditing();
       });
-      this.listenTo(vent, 'stop:edit:polygon', function (modelId) {
+
+      this.listenTo(vent, 'edit:polygon', function (modelId) {
         if (model.id == modelId) {
-          geoObject.editor.stopEditing();
+          if (geoObject.editor.state.get('editing')) {
+            geoObject.editor.stopEditing();
+          } else {
+            geoObject.editor.startEditing();
+          }
         }
       });
     },
@@ -116,8 +119,10 @@ define('views/map', [
       }, {
         fillColor: null,
         strokeColor: hexColor,
-        opacity: 0.6,
-        strokeWidth: 2
+        strokeWidth: 2,
+        editorMenuManager: function (items) {
+          return [items[0]];
+        }
       });
 
       map.geoObjects.add(geoObject);
@@ -127,10 +132,63 @@ define('views/map', [
 
   var LineMapView = MapObjectView.extend({
     onRender: function () {
+      var model = this.model;
+      var geoObject = this.geoObject;
+      this.listenTo(model, 'change:coordinates', function (model) {
+        this.geoObject.geometry.setCoordinates(model.get('coordinates'));
+      });
 
+      this.listenTo(model, 'change:name', function () {
+        var name = model.get('name');
+        this.geoObject.properties.set('hintContent', name);
+      });
+
+      this.listenTo(model, 'change:color', function () {
+        var color = model.get('color');
+        var hexColor = colorName2Hex[color];
+        this.geoObject.options.set('strokeColor', hexColor);
+      });
+
+      geoObject.events.add('editorstatechange', function () {
+        var coordinates = geoObject.geometry.getCoordinates();
+        model.set('coordinates', coordinates);
+      });
+
+      map.events.add('click', function () {
+        geoObject.editor.stopEditing();
+      });
+
+      this.listenTo(vent, 'edit:line', function (modelId) {
+        if (model.id == modelId) {
+          if (geoObject.editor.state.get('editing')) {
+            geoObject.editor.stopEditing();
+          } else {
+            geoObject.editor.startEditing();
+          }
+        }
+      });
     },
     _renderTemplate: function () {
+      var model = this.model;
+      var color = model.get('color');
+      var hexColor = colorName2Hex[color];
+      var geoObject = new ymaps.GeoObject({
+        geometry: {
+          type: "LineString",
+          coordinates: model.get('coordinates'),
+          draggable: true
+        }
+      }, {
+        strokeColor: hexColor,
+        hintContent: model.get('name'),
+        strokeWidth: 2,
+        editorMenuManager: function (items) {
+          return [items[0]];
+        }
+      });
 
+      map.geoObjects.add(geoObject);
+      this.geoObject = geoObject;
     }
   });
 

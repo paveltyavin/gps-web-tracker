@@ -4,8 +4,9 @@ define('views/panel', [
   'utils/colors',
   'hbs!templates/markerPanel',
   'hbs!templates/polygonPanel',
+  'hbs!templates/linePanel',
   'hbs!templates/objectsPanel'
-], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, Colors, markerPanelTemplate, polygonPanelTemplate, objectsPanelTemplate) {
+], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, Colors, markerPanelTemplate, polygonPanelTemplate, linePanelTemplate, objectsPanelTemplate) {
 
 
   var colorName2Hex = Colors.colorName2Hex;
@@ -24,7 +25,11 @@ define('views/panel', [
 
   var PanelView = marionette.ItemView.extend({
     initJSC: function () {
-      this.$el.find('input[name=\'color\']').simpleColor({
+      var sel = this.$el.find('input[name=\'color\']');
+      if (!sel) {
+        return
+      }
+      sel.simpleColor({
         columns: 4,
         boxWidth: 16,
         boxHeight: 16,
@@ -44,6 +49,11 @@ define('views/panel', [
           'vertical-align': 'middle',
           'display': 'inline-block'
         }
+      });
+
+      this.model.on('change:color', function (model, colorName) {
+        var hexColor = colorName2Hex[colorName];
+        sel.setColor(hexColor);
       });
     }
   });
@@ -93,13 +103,7 @@ define('views/panel', [
       this.model.destroy();
     },
     onDraw: function () {
-      if (this.draw) {
-        this.draw = false;
-        vent.trigger('stop:edit:polygon', this.model.id);
-      } else {
-        this.draw = true;
-        vent.trigger('start:edit:polygon', this.model.id);
-      }
+      vent.trigger('edit:polygon', this.model.id);
     },
 
     onShow: function () {
@@ -108,8 +112,33 @@ define('views/panel', [
       this.initJSC();
     }
   });
+
   var LineView = PanelView.extend({
-    template: markerPanelTemplate
+    template: linePanelTemplate,
+    className: 'polygonPanel',
+    model: models.Line,
+    bindings: {
+      color: {
+        selector: '[name=color]',
+        converter: colorConverter
+      }
+    },
+    events: {
+      'click .delete': 'onDelete',
+      'click .draw': 'onDraw'
+    },
+    onDelete: function () {
+      this.model.destroy();
+    },
+    onDraw: function () {
+      vent.trigger('edit:line', this.model.id);
+    },
+
+    onShow: function () {
+      this.modelBinder = new ModelBinder();
+      this.modelBinder.bind(this.model, this.el, this.bindings);
+      this.initJSC();
+    }
   });
 
   var PanelObjectsView = marionette.CompositeView.extend({
@@ -128,13 +157,17 @@ define('views/panel', [
     template: objectsPanelTemplate,
     events: {
       'click .addMarker': 'onAddMarker',
-      'click .addPolygon': 'addPolygon'
+      'click .addPolygon': 'addPolygon',
+      'click .addLine': 'addLine'
     },
     onAddMarker: function () {
       vent.trigger('add:marker');
     },
     addPolygon: function () {
       vent.trigger('add:polygon');
+    },
+    addLine: function () {
+      vent.trigger('add:line');
     }
   });
 

@@ -19,18 +19,21 @@ var markers = {
 var polygons = {
   start: {
     id: 'start',
-    coordinates:[[
-      [55.74954, 37.52158],
-      [55.64954, 37.52158],
-      [55.74954, 37.42158],
-      [55.64954, 37.42158]
-    ],[]]
+    coordinates: [
+      [
+        [55.74954, 37.52158],
+        [55.64954, 37.52158],
+        [55.74954, 37.42158],
+        [55.64954, 37.42158]
+      ],
+      []
+    ]
   }
 };
 var lines = {
   start: {
     id: 'start',
-    coordinates:[
+    coordinates: [
       [55.54954, 37.82158],
       [55.44954, 37.42158],
       [55.64954, 37.22158],
@@ -62,15 +65,24 @@ var browserServer = io(app, {
   logger: logger
 });
 
-var addFunction = function(model, socket){
+var getObjects = function (modelName) {
   var objects;
-  if (model=='marker'){
+  if (modelName == 'marker') {
     objects = markers;
   }
-  if (model=='polygon'){
+  if (modelName == 'polygon') {
     objects = polygons;
   }
-  return function(data){
+  if (modelName == 'line') {
+    objects = lines;
+  }
+  return objects;
+}
+
+var getAddFunction = function (modelName, socket) {
+  var objects = getObjects(modelName);
+
+  return function (data) {
     var objectId = data.id;
     if (!objectId) {
       return
@@ -82,56 +94,53 @@ var addFunction = function(model, socket){
       objects[objectId] = _.extend(object, data);
     }
 
-    logger.log('debug', 'add objectId: ',objectId);
-    socket.broadcast.emit('add:'+model, objects[objectId]);
+    logger.log('debug', 'add objectId: ', objectId);
+    socket.broadcast.emit('add:' + modelName, objects[objectId]);
   }
 };
 
-var updateFunction = function(model, socket){
-  var objects;
-  if (model=='marker'){
-    objects = markers;
-  }
-  if (model=='polygon'){
-    objects = polygons;
-  }
+var getUpdateFunction = function (modelName, socket) {
+  var objects = getObjects(modelName);
+
   return function (data) {
     var objectId = data.id;
     objects[objectId] = data;
-    logger.log('debug', 'update ' + model + 'Id: ',objectId);
-    socket.broadcast.emit('update:'+model, objects[objectId]);
+    logger.log('debug', 'update ' + modelName + 'Id: ', objectId);
+    socket.broadcast.emit('update:' + modelName, objects[objectId]);
   }
-}
+};
+
+var getDeleteFunction = function (modelName, socket) {
+  var objects = getObjects(modelName);
+
+  return function (data) {
+    var objectId = data.id;
+    delete objects[objectId];
+    logger.log('debug', 'delete ' + modelName + 'Id: ', objectId);
+    socket.broadcast.emit('delete:' + modelName, objectId);
+  }
+};
 
 browserServer.on('connection', function (socket) {
-  socket.on('add:marker', addFunction('marker', socket));
-  socket.on('add:polygon', addFunction('polygon', socket));
+  socket.on('add:marker', getAddFunction('marker', socket));
+  socket.on('add:polygon', getAddFunction('polygon', socket));
+  socket.on('add:line', getAddFunction('line', socket));
 
-  socket.on('update:marker', updateFunction('marker', socket));
-  socket.on('update:polygon', updateFunction('polygon', socket));
+  socket.on('update:marker', getUpdateFunction('marker', socket));
+  socket.on('update:polygon', getUpdateFunction('polygon', socket));
+  socket.on('update:line', getUpdateFunction('line', socket));
 
-  socket.on('delete:marker', function (data) {
-    var objectId = data.id;
-    delete markers[objectId];
-    logger.log('debug', 'delete marker: ', objectId);
-    socket.broadcast.emit('delete:marker', objectId)
-  });
-
-
-  socket.on('delete:polygon', function (data) {
-    var objectId = data.id;
-    delete polygons[objectId];
-    logger.log('debug', 'delete polygon: ', objectId);
-    socket.broadcast.emit('delete:polygon', objectId)
-  });
+  socket.on('delete:marker', getDeleteFunction('marker', socket));
+  socket.on('delete:polygon', getDeleteFunction('polygon', socket));
+  socket.on('delete:line', getDeleteFunction('line', socket));
 
   var addPoint = function (data) {
     logger.log('debug', 'point: ', data);
     socket.emit('add:point', data);
   };
-  eventEmitter.on('point',addPoint);
+  eventEmitter.on('point', addPoint);
 
-  socket.on('disconnect', function(socket){
+  socket.on('disconnect', function () {
     eventEmitter.removeListener('point', addPoint);
   });
 

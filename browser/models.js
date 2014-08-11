@@ -116,6 +116,7 @@ define('models', [
   return {
     Marker: Marker,
     Polygon: Polygon,
+    Line: Line,
     GeoObjectsCollection: GeoObjectsCollection
   }
 });
