@@ -1,4 +1,4 @@
-define('views', [
+define('views/panel', [
   'jquery', 'backbone', 'underscore', 'marionette', 'backbone.modelbinder', 'vent', 'reqres', 'models',
   'jquery-simple-color',
   'hbs!templates/markerPanel',
@@ -150,7 +150,7 @@ define('views', [
     template: markerPanelTemplate
   });
 
-  var GeoObjectsView = marionette.CompositeView.extend({
+  var PanelObjectsView = marionette.CompositeView.extend({
     getChildView: function (model) {
       if (model.modelType == 'marker') {
         return MarkerView;
@@ -181,9 +181,7 @@ define('views', [
   });
 
   return {
-    MarkerView: MarkerView,
-    PolygonView: PolygonView,
-    GeoObjectsView: GeoObjectsView,
+    PanelObjectsView: PanelObjectsView,
     TestView: TestView
   }
 });

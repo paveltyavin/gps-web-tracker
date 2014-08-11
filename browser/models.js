@@ -12,7 +12,7 @@ define('models', [
       console.log('sync ', method);
       socket.emit(method + ':' + model.modelType, model.toJSON());
     },
-    initSync: function () {
+    initialize: function () {
       var socket = reqres.request('socket');
       var _this = this;
 
@@ -49,68 +49,6 @@ define('models', [
     modelType: 'marker',
     defaults: {
       color: 'black'
-    },
-    initialize: function () {
-      this.initSync();
-      var _this = this;
-
-      this.on('change:lat, change:lng', function () {
-        var lat = this.get('lat');
-        var lng = this.get('lng');
-        this.geoObject.geometry.setCoordinates([lat, lng])
-      });
-
-      this.on('change:name', function () {
-        var name = this.get('name');
-        this.geoObject.properties.set('iconContent', name);
-      });
-
-      this.on('change:color', function () {
-        var color = this.get('color');
-        this.geoObject.options.set('preset', 'islands#' + color + 'StretchyIcon');
-      });
-
-      this.on('destroy', function () {
-        _this.removeGeoObject();
-      });
-      this.on('add', function () {
-        _this.addGeoObject();
-      });
-    },
-    addGeoObject: function () {
-      var model = this;
-      if (model.geoObject) {
-        return;
-      }
-      var geoObject = new ymaps.GeoObject({
-        geometry: {
-          type: "Point",
-          coordinates: [model.get('lat'), model.get('lng')]
-        },
-        properties: {
-          iconContent: model.get('name')
-        }
-      }, {
-        preset: 'islands#' + model.get('color') + 'StretchyIcon',
-        draggable: true
-      });
-      geoObject.events.add('dragend', function () {
-        var coordinates = geoObject.geometry.getCoordinates();
-        model.set({
-          lat: coordinates[0],
-          lng: coordinates[1]
-        });
-      });
-      geoObject.events.add('dblclick', function (ev) {
-        ev.preventDefault();
-        model.remove();
-      });
-      geoObject.events.add('click', function (ev) {
-        vent.trigger('click:marker', model);
-      });
-
-      map.geoObjects.add(geoObject);
-      this.geoObject = geoObject;
     }
   });
 
@@ -119,93 +57,37 @@ define('models', [
     modelType: 'polygon',
     defaults: {
       color: 'black'
-    },
-    initialize: function () {
-      this.initSync();
-      var _this = this;
-      this.on('change:coordinates', function (model) {
-        if (model.changeBlock) return
-        this.geoObject.geometry.setCoordinates(model.get('coordinates'));
-      });
-
-      this.on('change:name', function () {
-        var name = this.get('name');
-        this.geoObject.properties.set('hintContent', name);
-      });
-
-      this.on('change:color', function () {
-        var color = this.get('color');
-        this.geoObject.options.set('preset', 'islands#' + color + 'StretchyIcon');
-      });
-
-      this.on('destroy', function () {
-        _this.removeGeoObject();
-      });
-      this.on('add', function () {
-        _this.addGeoObject();
-      });
-    },
-    addGeoObject: function () {
-      var model = this;
-      if (model.geoObject) {
-        return;
-      }
-      var cords = map.getCenter();
-      var bounds = map.getBounds();
-      var dx = (bounds[0][0] - bounds[1][0])*0.1;
-      var dy = (bounds[0][1] - bounds[1][1])*0.02;
-
-      var geoObject = new ymaps.GeoObject({
-        geometry: {
-          type: "Polygon",
-
-          coordinates: model.get('coordinates'),
-          draggable: true
-        }
-      }, {
-        fillColor: null,
-        strokeColor: '#000000',
-        opacity: 0.6,
-        strokeWidth: 2
-      });
-
-      geoObject.events.add('editorstatechange', function () {
-        var coordinates = geoObject.geometry.getCoordinates();
-        model.changeBlock = true;
-        model.set('coordinates', coordinates);
-        delete model.changeBlock;
-      });
-      map.geoObjects.add(geoObject);
-      this.geoObject = geoObject;
     }
   });
 
   var Line = GeoModel.extend({
-    modelType: 'line'
+    modelType: 'line',
+    defaults: {
+      color: 'black'
+    }
   });
 
-  var getModel = function(modelName){
-    if (modelName == 'polygon') return Polygon;
-    if (modelName == 'marker') return Marker;
-    if (modelName == 'line') return Line;
+  var getModel = function(modelType){
+    if (modelType == 'polygon') return Polygon;
+    if (modelType == 'marker') return Marker;
+    if (modelType == 'line') return Line;
   };
 
-  var getSetFunction = function(modelName, view, socket){
-    var Model = getModel(modelName);
+  var getSetFunction = function(modelType, collection){
+    var Model = getModel(modelType);
     return function(data){
-      view.every(function (model) {
-        if (model.modelType == 'marker') {
+      collection.every(function (model) {
+        if (model.modelType == modelType) {
           model.destroy();
         }
       });
       _.each(data, function (item) {
-        console.log(modelName);
-        view.add(new Model(item));
+        collection.add(new Model(item));
       });
     }
   };
-  var getAddFunction = function(modelName, view, socket){
-    var Model = getModel(modelName);
+  var getAddFunction = function(modelType, view){
+    var Model = getModel(modelType);
     return function(data){
       view.add(new Model(data));
     }
@@ -215,13 +97,13 @@ define('models', [
     initialize: function () {
       var socket = reqres.request('socket');
       var _this = this;
-      socket.on('add:marker',getAddFunction('marker', _this, socket));
-      socket.on('add:polygon',getAddFunction('polygon', _this, socket));
-      socket.on('add:line',getAddFunction('line', _this, socket));
+      socket.on('add:marker',getAddFunction('marker', _this));
+      socket.on('add:polygon',getAddFunction('polygon', _this));
+      socket.on('add:line',getAddFunction('line', _this));
 
-      socket.on('set:markers', getSetFunction('marker', _this, socket));
-      socket.on('set:polygons', getSetFunction('polygon', _this, socket));
-      socket.on('set:lines', getSetFunction('line', _this, socket));
+      socket.on('set:markers', getSetFunction('marker', _this));
+      socket.on('set:polygons', getSetFunction('polygon', _this));
+      socket.on('set:lines', getSetFunction('line', _this));
     }
   });
 

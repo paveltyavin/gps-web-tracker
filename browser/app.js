@@ -1,7 +1,7 @@
 define('app', [
   'jquery', 'backbone', 'marionette', 'socket.io-client',
-  'map', 'vent', 'reqres', 'models', 'views', 'config'
-], function ($, backbone, marionette, io, map, vent, reqres, models, views, config) {
+  'map', 'vent', 'reqres', 'models', 'views/panel', 'views/map', 'config'
+], function ($, backbone, marionette, io, map, vent, reqres, models, panelViews, mapViews, config) {
 
   var App = Marionette.Application.extend({
     initData: function () {
@@ -57,10 +57,13 @@ define('app', [
       });
       var socket = reqres.request('socket');
       socket.on('connect', function () {
-        var view = new views.GeoObjectsView({
+        var panelObjectsView = new panelViews.PanelObjectsView({
           collection: _this.geoObjectsCollection
         });
-        _this.panelRegion.show(view);
+        _this.panelRegion.show(panelObjectsView);
+        var mapObjectsView = new mapViews.MapObjectsView({
+          collection: _this.geoObjectsCollection
+        });
       });
       socket.on('disconnect', function () {
         _this.panelRegion.empty();
