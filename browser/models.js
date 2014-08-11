@@ -49,6 +49,12 @@ define('models', [
     modelType: 'marker',
     defaults: {
       color: 'black'
+    },
+    setLng: function(){
+      debugger
+    },
+    setLat: function(){
+      debugger
     }
   });
 

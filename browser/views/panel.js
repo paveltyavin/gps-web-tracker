@@ -1,45 +1,22 @@
 define('views/panel', [
   'jquery', 'backbone', 'underscore', 'marionette', 'backbone.modelbinder', 'vent', 'reqres', 'models',
   'jquery-simple-color',
+  'utils/colors',
   'hbs!templates/markerPanel',
   'hbs!templates/polygonPanel',
   'hbs!templates/objectsPanel'
-], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, markerPanelTemplate, polygonPanelTemplate, objectsPanelTemplate) {
+], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, Colors, markerPanelTemplate, polygonPanelTemplate, objectsPanelTemplate) {
 
 
-  var colorName2Hex = {
-    'green': '56db40',
-    'blue': '1e98ff',
-    'darkBlue': '177bc9',
-    'black': '595959',
-    'brown': '793d0e',
-    'yellow': 'ffd21e',
-    'darkGreen': '1bad03',
-    'violet': 'b51eff',
-    'red': 'ed4543',
-    'pink': 'f371d1',
-    'orange': 'ff931e',
-    'olive': '97a100',
-    'night': '0e4779',
-    'lightBlue': '82cdff',
-    'darkOrange': 'e6761b',
-    'gray': 'b3b3b3'
-  };
-  var hex2ColorName = {
-  };
-
-  for (var prop in colorName2Hex) {
-    if (colorName2Hex.hasOwnProperty(prop)) {
-      hex2ColorName[colorName2Hex[prop]] = prop;
-    }
-  }
+  var colorName2Hex = Colors.colorName2Hex;
+  var hex2ColorName = Colors.hex2ColorName;
+  var colors = _.map(_.keys(hex2ColorName), function(x){return x.replace('#', '');});
 
   var colorConverter = function (direction, value, attribute, model, els) {
     if (direction === "ModelToView") {
-      return '#' + colorName2Hex[value];
+      return colorName2Hex[value];
     }
     if (direction === "ViewToModel") {
-      value = value.replace('#', '');
       return hex2ColorName[value];
     }
   };
@@ -64,13 +41,12 @@ define('views/panel', [
 
     onShow: function () {
       this.modelBinder = new ModelBinder();
-      var hexColor = colorName2Hex[this.model.get('color')];
       this.modelBinder.bind(this.model, this.el, this.bindings);
       this.$el.find('input[name=\'color\']').simpleColor({
         columns: 4,
         boxWidth: 16,
         boxHeight: 16,
-        colors: _.keys(hex2ColorName),
+        colors: colors,
         cellWidth: 16,
         cellHeight: 16,
         chooserCSS: {
@@ -111,23 +87,22 @@ define('views/panel', [
     },
     onDraw: function () {
       if (this.draw) {
-        this.model.geoObject.editor.stopEditing();
         this.draw = false;
+        vent.trigger('stop:edit:polygon', this.model.id);
       } else {
         this.draw = true;
-        this.model.geoObject.editor.startEditing();
+        vent.trigger('start:edit:polygon', this.model.id);
       }
     },
 
     onShow: function () {
       this.modelBinder = new ModelBinder();
-      var hexColor = colorName2Hex[this.model.get('color')];
       this.modelBinder.bind(this.model, this.el, this.bindings);
       this.$el.find('input[name=\'color\']').simpleColor({
         columns: 4,
         boxWidth: 16,
         boxHeight: 16,
-        colors: _.keys(hex2ColorName),
+        colors: colors,
         cellWidth: 16,
         cellHeight: 16,
         chooserCSS: {
