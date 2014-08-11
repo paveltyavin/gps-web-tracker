@@ -5,7 +5,7 @@ define('views/map', [
 ], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, map) {
 
   var MapObjectView = marionette.ItemView.extend({
-    removeGeoObject: function () {
+    onBeforeDestroy: function () {
       if (this.geoObject) {
         map.geoObjects.remove(this.geoObject);
         delete this.geoObject;
@@ -14,26 +14,27 @@ define('views/map', [
   });
 
   var MarkerMapView = MapObjectView.extend({
-    someMethod: function () {
+    onRender: function () {
       var model = this.model;
       var _this = this;
-      model.on('change:lat, change:lng', function () {
+
+      this.listenTo(model, 'change:lat, change:lng', function () {
         var lat = model.get('lat');
         var lng = model.get('lng');
         _this.geoObject.geometry.setCoordinates([lat, lng])
       });
 
-      model.on('change:name', function () {
+      this.listenTo(model, 'change:name', function () {
         var name = model.get('name');
         _this.geoObject.properties.set('iconContent', name);
       });
 
-      model.on('change:color', function () {
+      this.listenTo(model, 'change:color', function () {
         var color = model.get('color');
         _this.geoObject.options.set('preset', 'islands#' + color + 'StretchyIcon');
       });
     },
-    render: function () {
+    _renderTemplate: function () {
       var model = this.model;
       var geoObject = new ymaps.GeoObject({
         geometry: {
@@ -64,22 +65,23 @@ define('views/map', [
 
       map.geoObjects.add(geoObject);
       this.geoObject = geoObject;
+      return this;
     }
   });
 
   var PolygonMapView = MapObjectView.extend({
     modelBindingFunction: function () {
-      var _this = this;
-      this.on('change:coordinates', function (model) {
+      var model = this.model;
+      this.listenTo(model, 'change:coordinates', function (model) {
         this.geoObject.geometry.setCoordinates(model.get('coordinates'));
       });
 
-      this.on('change:name', function () {
+      this.listenTo(model, 'change:name', function () {
         var name = this.get('name');
         this.geoObject.properties.set('hintContent', name);
       });
 
-      this.on('change:color', function () {
+      this.listenTo(model, 'change:color', function () {
         var color = this.get('color');
         this.geoObject.options.set('preset', 'islands#' + color + 'StretchyIcon');
       });
