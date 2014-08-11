@@ -2,7 +2,7 @@ require.config({
   paths: {
     backbone: '../bower_components/backbone/backbone',
     'backbone.wreqr': '../bower_components/backbone.wreqr/lib/backbone.wreqr',
-    'backbone.modelbinder': '../bower_components/backbone.modelbinder/Backbone.Modelbinder',
+    'backbone.modelbinder': '../bower_components/backbone.modelbinder/Backbone.ModelBinder',
     jquery: '../bower_components/jquery/dist/jquery',
     'jquery-simple-color': '../bower_components/jquery-simple-color/src/jquery.simple-color',
     'hbs': '../bower_components/hbs/hbs',
