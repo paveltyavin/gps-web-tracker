@@ -16,8 +16,7 @@ module.exports = function (grunt) {
 //          optimize:'none',
           name: "../bower_components/almond/almond",
           include: [
-            'controller',
-            'view',
+            'app',
             '../bower_components/raven-js/dist/raven'
           ]
         }
