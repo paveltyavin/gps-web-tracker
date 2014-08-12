@@ -15,10 +15,40 @@ body {
     background-color: #fff;
     padding: 10px;
     display: none;
-    /*display: inline-block;*/
     border-radius: 2px;
-    width: 300px;
+    width: 260px;
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}
+
+.icon
+{
+    display: inline-block;
+    vertical-align: middle;
+    width:  20px;
+    height: 20px;
+    border: 0;
+    background-size: auto 100%;
+    cursor: pointer;
+}
+.draw {
+    width:  16px;
+    height: 16px;
+    background: url(img/icons/pencil.svg) no-repeat;
+}
+.addMarker {
+    background: url(img/icons/marker.svg) no-repeat;
+}
+.addPolygon{
+    background: url(img/icons/square.svg) no-repeat;
+}
+.addLine{
+    background: url(img/icons/line.svg) no-repeat;
+}
+.delete{
+    width:  16px;
+    height: 16px;
+    margin-left: 4px;
+    background: url(img/icons/delete.svg) no-repeat;
 }
 
 input[type=text] {

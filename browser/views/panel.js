@@ -182,6 +182,11 @@ define('views/panel', [
         var normCords = [cords[0].toFixed(4), cords[1].toFixed(4)].join(', ');
         _this.ui.cords.val(normCords);
       });
+
+      var cords = map.getCenter();
+      var normCords = [cords[0].toFixed(4), cords[1].toFixed(4)].join(', ');
+      _this.ui.cords.val(normCords);
+
       _this.ui.cords.on('change', function(ev){
         var cordsStr = ev.target.value;
         var cords;
