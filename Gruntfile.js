@@ -43,6 +43,14 @@ module.exports = function (grunt) {
           'build/index.html': 'browser/index.html'
         }
       }
+    },
+    copy: {
+      main: {
+        files: [
+          // includes files within path
+          {expand: true, cwd: 'browser/', src: ['img/**'], dest: 'build/'}
+        ]
+      }
     }
   });
 
@@ -50,7 +58,8 @@ module.exports = function (grunt) {
   grunt.loadNpmTasks('grunt-contrib-cssmin');
   grunt.loadNpmTasks('grunt-contrib-requirejs');
   grunt.loadNpmTasks('grunt-processhtml');
+  grunt.loadNpmTasks('grunt-contrib-copy');
 
-  grunt.registerTask('default', ['clean', 'requirejs', 'cssmin', 'processhtml']);
+  grunt.registerTask('default', ['clean', 'requirejs', 'cssmin', 'processhtml', 'copy']);
 
 };
