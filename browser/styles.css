@@ -14,16 +14,11 @@ body {
     top: 10px;
     background-color: #fff;
     padding: 10px;
-    display: inline-block;
+    display: none;
+    /*display: inline-block;*/
     border-radius: 2px;
     width: 300px;
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
-}
-
-@media (max-width:768px) {
-    #panel{
-        display: none;
-    }
 }
 
 input[type=text] {

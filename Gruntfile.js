@@ -16,8 +16,8 @@ module.exports = function (grunt) {
 //          optimize:'none',
           name: "../bower_components/almond/almond",
           include: [
-            'app',
-            '../bower_components/raven-js/dist/raven'
+            '../bower_components/raven-js/dist/raven',
+            'app'
           ]
         }
       }
