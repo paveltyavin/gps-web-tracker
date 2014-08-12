@@ -78,7 +78,7 @@ define('views/map', [
 
       this.listenTo(model, 'change:name', function () {
         var name = model.get('name');
-        this.geoObject.properties.set('hintContent', name);
+//        this.geoObject.properties.set('hintContent', name);
       });
 
       this.listenTo(model, 'change:color', function () {
@@ -120,6 +120,7 @@ define('views/map', [
         fillColor: null,
         strokeColor: hexColor,
         strokeWidth: 2,
+        interactivityModel: 'default#transparent',
         editorMenuManager: function (items) {
           return [items[0]];
         }

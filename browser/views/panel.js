@@ -2,11 +2,12 @@ define('views/panel', [
   'jquery', 'backbone', 'underscore', 'marionette', 'backbone.modelbinder', 'vent', 'reqres', 'models',
   'jquery-simple-color',
   'utils/colors',
+  'map',
   'hbs!templates/markerPanel',
   'hbs!templates/polygonPanel',
   'hbs!templates/linePanel',
   'hbs!templates/objectsPanel'
-], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, Colors, markerPanelTemplate, polygonPanelTemplate, linePanelTemplate, objectsPanelTemplate) {
+], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, Colors, map, markerPanelTemplate, polygonPanelTemplate, linePanelTemplate, objectsPanelTemplate) {
 
 
   var colorName2Hex = Colors.colorName2Hex;
@@ -39,8 +40,8 @@ define('views/panel', [
         chooserCSS: {
           'border': '1px solid #000',
           'margin': '5px 0 0 0',
-          'top': +16,
-          'left': -56,
+          'top': -22,
+          'left': -75,
           'position': 'absolute'
         },
         displayCSS: {
@@ -90,6 +91,7 @@ define('views/panel', [
     model: models.Polygon,
     draw: false,
     bindings: {
+      name: '[name=name]',
       color: {
         selector: '[name=color]',
         converter: colorConverter
@@ -118,6 +120,7 @@ define('views/panel', [
     className: 'polygonPanel',
     model: models.Line,
     bindings: {
+      name: '[name=name]',
       color: {
         selector: '[name=color]',
         converter: colorConverter
@@ -155,6 +158,9 @@ define('views/panel', [
     },
     childViewContainer: ".pannelInner",
     template: objectsPanelTemplate,
+    ui: {
+      cords: '.cords'
+    },
     events: {
       'click .addMarker': 'onAddMarker',
       'click .addPolygon': 'addPolygon',
@@ -168,6 +174,25 @@ define('views/panel', [
     },
     addLine: function () {
       vent.trigger('add:line');
+    },
+    onRender: function(){
+      var _this = this;
+      map.events.add('boundschange', function(ev){
+        var cords = ev.originalEvent.newCenter;
+        var normCords = [cords[0].toFixed(4), cords[1].toFixed(4)].join(', ');
+        _this.ui.cords.val(normCords);
+      });
+      _this.ui.cords.on('change', function(ev){
+        var cordsStr = ev.target.value;
+        var cords;
+        try {
+          cords = cordsStr.split(',');
+          cords = [parseFloat(cords[0]),parseFloat(cords[1])]
+        } catch (TypeError) {
+          return
+        }
+        map.setCenter(cords);
+      })
     }
   });
 

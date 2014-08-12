@@ -12,10 +12,6 @@ body {
     position: fixed;
     right: 10px;
     top: 10px;
-    display: block;
-}
-
-#panel {
     background-color: #fff;
     padding: 10px;
     display: inline-block;
@@ -24,14 +20,18 @@ body {
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
 }
 
-input[type=text]{
+@media (max-width:768px) {
+    #panel{
+        display: none;
+    }
+}
+
+input[type=text] {
     border: 1px solid #CCC;
     color: #444;
+    margin: 0 auto;
     height: 14px;
     line-height: 10px;
-    margin-bottom: 16px;
-    margin-right: 6px;
-    margin-top: 2px;
     outline: 0 none;
     padding: 5px 0px 5px 5px;
     border-radius: 4px;
@@ -41,15 +41,40 @@ input[type=text]{
     box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
     -moz-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075);
 }
+[name='cords']{
+    width: 180px;
+}
 
 .markerPanel [name='name'] {
-    width: 230px;
+    width: 180px;
 }
+
+.polygonPanel [name='name'],
+.linePanel [name='name']{
+    width: 180px;
+}
+
 .simpleColorContainer {
     display: inline-block;
 }
 
 [name='delete'] {
-    vertical-align: middle;
     display: inline-block;
+}
+
+.markerPanel, .linePanel, .polygonPanel, .panelTop {
+    height: 40px;
+}
+
+.leftPanel {
+    float: left;
+}
+
+.rightPanel {
+    float: right;
+}
+
+.rightPanel, .leftPanel {
+    vertical-align: middle;
+    line-height: 30px;
 }

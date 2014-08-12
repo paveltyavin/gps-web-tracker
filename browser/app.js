@@ -27,15 +27,18 @@ define('app', [
         var polygonId = (Math.random() + 1).toString(36).substring(7);
         var cords = map.getCenter();
         var bounds = map.getBounds();
-        var dx = (bounds[0][0] - bounds[1][0])*0.1;
-        var dy = (bounds[0][1] - bounds[1][1])*0.02;
+        var dx = (bounds[0][0] - bounds[1][0]) * 0.1;
+        var dy = (bounds[0][1] - bounds[1][1]) * 0.02;
         var data = _.extend({
-          coordinates: [[
-            [cords[0] + dx, cords[1] - dy],
-            [cords[0] + dx, cords[1] + dy],
-            [cords[0] - dx, cords[1] + dy],
-            [cords[0] - dx, cords[1] - dy]
-          ],[]]
+          coordinates: [
+            [
+              [cords[0] + dx, cords[1] - dy],
+              [cords[0] + dx, cords[1] + dy],
+              [cords[0] - dx, cords[1] + dy],
+              [cords[0] - dx, cords[1] - dy]
+            ],
+            []
+          ]
         }, originalData, {
           id: polygonId
         });
@@ -49,8 +52,8 @@ define('app', [
         var lineId = (Math.random() + 1).toString(36).substring(7);
         var cords = map.getCenter();
         var bounds = map.getBounds();
-        var dx = (bounds[0][0] - bounds[1][0])*0.1;
-        var dy = (bounds[0][1] - bounds[1][1])*0.02;
+        var dx = (bounds[0][0] - bounds[1][0]) * 0.1;
+        var dy = (bounds[0][1] - bounds[1][1]) * 0.02;
         var data = _.extend({
           coordinates: [
             [cords[0] + dx, cords[1] - dy],
@@ -81,9 +84,12 @@ define('app', [
       });
       var socket = reqres.request('socket');
       socket.on('connect', function () {
-        _this.panelObjectsView = new panelViews.PanelObjectsView({
-          collection: _this.geoObjectsCollection
-        });
+        var width = $(window).width();
+        if (width > 767) {
+          _this.panelObjectsView = new panelViews.PanelObjectsView({
+            collection: _this.geoObjectsCollection
+          });
+        }
         _this.panelRegion.show(_this.panelObjectsView);
         _this.mapObjectsView = new mapViews.MapObjectsView({
           collection: _this.geoObjectsCollection

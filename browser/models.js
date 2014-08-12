@@ -9,7 +9,7 @@ define('models', [
       if (model.syncBlock) {
         return
       }
-      console.log('sync ', method);
+      if (window.debug) console.log('sync', method);
       socket.emit(method + ':' + model.modelType, model.toJSON());
     },
     initialize: function () {
@@ -18,7 +18,7 @@ define('models', [
 
       socket.on('update:' + _this.modelType, function (data) {
         if (data.id === _this.id) {
-          console.log('update' + _this.modelType);
+          if (window.debug) console.log('update' + _this.modelType);
           _this.syncBlock = true;
           _this.set(data);
           delete _this.syncBlock;
@@ -26,7 +26,7 @@ define('models', [
       });
       socket.on('delete:' + _this.modelType, function (objectId) {
         if (objectId === _this.id) {
-          console.log('delete' + _this.modelType);
+          if (window.debug) console.log('delete' + _this.modelType);
           _this.syncBlock = true;
           _this.destroy();
           delete _this.syncBlock;
