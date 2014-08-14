@@ -12,7 +12,7 @@ define('map', [
   var map = new ymaps.Map('map', {
     center: mapCenter,
     zoom: 10,
-    controls: ['rulerControl']
+    controls: ['rulerControl', 'zoomControl']
   });
   map.controls.add(new ymaps.control.TypeSelector(), {
       float: 'left'

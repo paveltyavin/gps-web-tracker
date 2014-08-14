@@ -177,8 +177,9 @@ define('views/panel', [
     },
     onRender: function(){
       var _this = this;
-      map.events.add('boundschange', function(ev){
-        var cords = ev.originalEvent.newCenter;
+      map.events.add('actiontick', function(ev){
+        var tick = ev.originalEvent.tick;
+        var cords = map.options.get('projection').fromGlobalPixels(tick.globalPixelCenter, tick.zoom);
         var normCords = [cords[0].toFixed(4), cords[1].toFixed(4)].join(', ');
         _this.ui.cords.val(normCords);
       });
