@@ -163,14 +163,10 @@ define('views/panel', [
     },
     events: {
       'click .addMarker': 'onAddMarker',
-      'click .addPolygon': 'addPolygon',
       'click .addLine': 'addLine'
     },
     onAddMarker: function () {
       vent.trigger('add:marker');
-    },
-    addPolygon: function () {
-      vent.trigger('add:polygon');
     },
     addLine: function () {
       vent.trigger('add:line');
