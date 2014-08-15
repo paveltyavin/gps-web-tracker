@@ -121,6 +121,13 @@ var getDeleteFunction = function (modelName, socket) {
   }
 };
 
+var getHighlightFunction = function (modelName, socket) {
+  return function (objectId) {
+    logger.log('debug', 'highlight ' + modelName + 'Id: ', objectId);
+    socket.broadcast.emit('highlight:' + modelName, objectId);
+  }
+};
+
 browserServer.on('connection', function (socket) {
   socket.on('add:marker', getAddFunction('marker', socket));
   socket.on('add:polygon', getAddFunction('polygon', socket));
@@ -133,6 +140,9 @@ browserServer.on('connection', function (socket) {
   socket.on('delete:marker', getDeleteFunction('marker', socket));
   socket.on('delete:polygon', getDeleteFunction('polygon', socket));
   socket.on('delete:line', getDeleteFunction('line', socket));
+
+  socket.on('highlight:marker', getHighlightFunction('marker', socket));
+  socket.on('highlight:line', getHighlightFunction('line', socket));
 
   var addPoint = function (data) {
     logger.log('debug', 'point: ', data);

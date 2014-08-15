@@ -8,7 +8,24 @@ define('views/panel', [
   'hbs!templates/linePanel',
   'hbs!templates/objectsPanel'
 ], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, Colors, map, markerPanelTemplate, polygonPanelTemplate, linePanelTemplate, objectsPanelTemplate) {
-
+  $.fn.highlight = function () {
+    $(this).each(function () {
+      var el = $(this);
+      $("<div/>")
+        .width(el.outerWidth())
+        .height(el.outerHeight())
+        .css({
+          "position": "absolute",
+          "left": el.offset().left,
+          "top": el.offset().top,
+          "background-color": "#ffff99",
+          "opacity": ".7",
+          "z-index": "9999999"
+        }).appendTo('body').fadeOut(250).queue(function () {
+          $(this).remove();
+        });
+    });
+  }
 
   var colorName2Hex = Colors.colorName2Hex;
   var hex2ColorName = Colors.hex2ColorName;
@@ -56,6 +73,10 @@ define('views/panel', [
         var hexColor = colorName2Hex[colorName];
         sel.setColor(hexColor);
       });
+    },
+    onBeforeClose: function(){
+      var sel = this.$el.find('input[name=\'color\']');
+      sel.closeChooser();
     }
   });
 
@@ -63,6 +84,9 @@ define('views/panel', [
     template: markerPanelTemplate,
     className: 'markerPanel',
     model: models.Marker,
+    ui: {
+      circle: '.circle'
+    },
     bindings: {
       name: '[name=name]',
       color: {
@@ -80,6 +104,23 @@ define('views/panel', [
     onShow: function () {
       this.modelBinder = new ModelBinder();
       this.modelBinder.bind(this.model, this.el, this.bindings);
+      var _this = this;
+      this.listenTo(this.model, 'highlight', function () {
+        if (_this.blockHighlight){
+          return
+        }
+        _this.$el.find('input[name=\'name\']').highlight();
+      });
+      this.listenTo(this.model, 'change:color', function () {
+        _this.ui.circle.attr('src', 'img/circle/' + this.model.get('color') + '.png');
+      });
+      _this.ui.circle.attr('src', 'img/circle/' + this.model.get('color') + '.png');
+
+      _this.ui.circle.on('click', function(){
+        _this.blockHighlight = true;
+        _this.model.trigger('highlight');
+        delete _this.blockHighlight;
+      });
       this.initJSC();
     }
   });
@@ -119,6 +160,10 @@ define('views/panel', [
     template: linePanelTemplate,
     className: 'polygonPanel',
     model: models.Line,
+    ui: {
+      icon: '.icon',
+      'diaginalLine': '.diagonal-line'
+    },
     bindings: {
       name: '[name=name]',
       color: {
@@ -140,6 +185,26 @@ define('views/panel', [
     onShow: function () {
       this.modelBinder = new ModelBinder();
       this.modelBinder.bind(this.model, this.el, this.bindings);
+
+      var _this = this;
+      this.listenTo(this.model, 'highlight', function () {
+        if (_this.blockHighlight){
+          return
+        }
+        _this.$el.find('input[name=\'name\']').highlight();
+      });
+      this.listenTo(this.model, 'change:color', function () {
+        _this.ui.diaginalLine.css('background-color', colorName2Hex[this.model.get('color')]);
+      });
+      _this.ui.diaginalLine.css('background-color', colorName2Hex[this.model.get('color')]);
+
+
+      _this.ui.icon.on('click', function(){
+        _this.blockHighlight = true;
+        _this.model.trigger('highlight');
+        delete _this.blockHighlight;
+      });
+
       this.initJSC();
     }
   });
@@ -171,9 +236,9 @@ define('views/panel', [
     addLine: function () {
       vent.trigger('add:line');
     },
-    onRender: function(){
+    onRender: function () {
       var _this = this;
-      map.events.add('actiontick', function(ev){
+      map.events.add('actiontick', function (ev) {
         var tick = ev.originalEvent.tick;
         var cords = map.options.get('projection').fromGlobalPixels(tick.globalPixelCenter, tick.zoom);
         var normCords = [cords[0].toFixed(4), cords[1].toFixed(4)].join(', ');
@@ -184,12 +249,12 @@ define('views/panel', [
       var normCords = [cords[0].toFixed(4), cords[1].toFixed(4)].join(', ');
       _this.ui.cords.val(normCords);
 
-      _this.ui.cords.on('change', function(ev){
+      _this.ui.cords.on('change', function (ev) {
         var cordsStr = ev.target.value;
         var cords;
         try {
           cords = cordsStr.split(',');
-          cords = [parseFloat(cords[0]),parseFloat(cords[1])]
+          cords = [parseFloat(cords[0]), parseFloat(cords[1])]
         } catch (TypeError) {
           return
         }

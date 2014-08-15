@@ -24,12 +24,28 @@ define('models', [
           delete _this.syncBlock;
         }
       });
+
+      socket.on('highlight:' + _this.modelType, function (objectId) {
+        if (objectId === _this.id) {
+          if (window.debug) console.log('highlight' + _this.modelType);
+          _this.syncBlock = true;
+          _this.trigger('highlight');
+          delete _this.syncBlock;
+        }
+      });
+
       socket.on('delete:' + _this.modelType, function (objectId) {
         if (objectId === _this.id) {
           if (window.debug) console.log('delete' + _this.modelType);
           _this.syncBlock = true;
           _this.destroy();
           delete _this.syncBlock;
+        }
+      });
+
+      _this.on('highlight', function(){
+        if (!_this.syncBlock){
+          socket.emit('highlight:' + _this.modelType, _this.id)
         }
       });
 

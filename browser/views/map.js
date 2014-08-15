@@ -38,6 +38,10 @@ define('views/map', [
         _this.geoObject.options.set('preset', 'islands#' + color + 'StretchyIcon');
       });
 
+      this.listenTo(model, 'highlight', function () {
+        _this.highlight();
+      });
+
       geoObject.events.add('dragend', function () {
         var coordinates = geoObject.geometry.getCoordinates();
         model.set({
@@ -46,6 +50,26 @@ define('views/map', [
           }
         );
       });
+      geoObject.events.add('click', function () {
+        model.trigger('highlight');
+      });
+    },
+    highlight: function () {
+      var t = 0;
+      var T = 25;
+      var y;
+      var geoObject = this.geoObject;
+      function frame() {
+        t ++;
+        y = 20*Math.sin(t/T*Math.PI);
+        geoObject.options.set('iconOffset', [0, -y]);
+        if (t == T) {
+          clearInterval(timer);
+        }
+      }
+
+      var timer = setInterval(frame, 10);
+
     },
     _renderTemplate: function () {
       var model = this.model;
@@ -78,7 +102,6 @@ define('views/map', [
 
       this.listenTo(model, 'change:name', function () {
         var name = model.get('name');
-//        this.geoObject.properties.set('hintContent', name);
       });
 
       this.listenTo(model, 'change:color', function () {
@@ -119,7 +142,7 @@ define('views/map', [
       }, {
         fillColor: null,
         strokeColor: hexColor,
-        strokeWidth: 2,
+        strokeWidth: 3,
         interactivityModel: 'default#transparent',
         editorMenuManager: function (items) {
           return [items[0]];
@@ -134,6 +157,7 @@ define('views/map', [
   var LineMapView = MapObjectView.extend({
     onRender: function () {
       var model = this.model;
+      var _this = this;
       var geoObject = this.geoObject;
       this.listenTo(model, 'change:coordinates', function (model) {
         this.geoObject.geometry.setCoordinates(model.get('coordinates'));
@@ -150,6 +174,10 @@ define('views/map', [
         this.geoObject.options.set('strokeColor', hexColor);
       });
 
+      this.listenTo(model, 'highlight', function () {
+        _this.highlight();
+      });
+
       geoObject.events.add('editorstatechange', function () {
         var coordinates = geoObject.geometry.getCoordinates();
         model.set('coordinates', coordinates);
@@ -157,6 +185,10 @@ define('views/map', [
 
       map.events.add('click', function () {
         geoObject.editor.stopEditing();
+      });
+
+      geoObject.events.add('click', function () {
+        model.trigger('highlight');
       });
 
       this.listenTo(vent, 'edit:line', function (modelId) {
@@ -168,6 +200,27 @@ define('views/map', [
           }
         }
       });
+    },
+    highlight: function () {
+      var geoObject = this.geoObject;
+      var t = 0;
+      var T = 25;
+      var strokeWidth;
+      var oldStrokeColor = geoObject.options.get('strokeWidth');
+      function frame() {
+        t ++;
+
+        strokeWidth = parseInt(3*Math.sin(t/T*Math.PI));
+        geoObject.options.set('strokeWidth', oldStrokeColor+strokeWidth);
+
+        if (t == T) {
+          clearInterval(timer);
+          geoObject.options.set('strokeWidth', oldStrokeColor);
+        }
+      }
+
+      var timer = setInterval(frame, 10);
+
     },
     _renderTemplate: function () {
       var model = this.model;
@@ -182,7 +235,7 @@ define('views/map', [
       }, {
         strokeColor: hexColor,
         hintContent: model.get('name'),
-        strokeWidth: 2,
+        strokeWidth: 3,
         editorMenuManager: function (items) {
           return [items[0]];
         }
