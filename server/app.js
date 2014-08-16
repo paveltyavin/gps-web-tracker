@@ -137,14 +137,4 @@ browserServer.on('connection', function (socket) {
   socket.emit('set:points', _.values(points));
   socket.emit('set:markers', _.values(markers));
   socket.emit('set:lines', _.values(lines));
-  setInterval(function () {
-    var beforeNow = new Date(new Date - config.pointTTL);
-    for (var pointId in points) {
-      var point = points[pointId];
-      if (point.modified < beforeNow) {
-        delete points[pointId];
-      }
-    }
-    socket.emit('set:points', _.values(points));
-  }, config.pointCheckTime);
 });
