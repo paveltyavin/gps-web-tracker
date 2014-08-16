@@ -16,20 +16,6 @@ var markers = {
   }
 };
 
-var polygons = {
-  start: {
-    id: 'start',
-    coordinates: [
-      [
-        [55.74954, 37.52158],
-        [55.64954, 37.52158],
-        [55.74954, 37.42158],
-        [55.64954, 37.42158]
-      ],
-      []
-    ]
-  }
-};
 var lines = {
   start: {
     id: 'start',
@@ -69,9 +55,6 @@ var getObjects = function (modelName) {
   var objects;
   if (modelName == 'marker') {
     objects = markers;
-  }
-  if (modelName == 'polygon') {
-    objects = polygons;
   }
   if (modelName == 'line') {
     objects = lines;
@@ -130,15 +113,12 @@ var getHighlightFunction = function (modelName, socket) {
 
 browserServer.on('connection', function (socket) {
   socket.on('add:marker', getAddFunction('marker', socket));
-  socket.on('add:polygon', getAddFunction('polygon', socket));
   socket.on('add:line', getAddFunction('line', socket));
 
   socket.on('update:marker', getUpdateFunction('marker', socket));
-  socket.on('update:polygon', getUpdateFunction('polygon', socket));
   socket.on('update:line', getUpdateFunction('line', socket));
 
   socket.on('delete:marker', getDeleteFunction('marker', socket));
-  socket.on('delete:polygon', getDeleteFunction('polygon', socket));
   socket.on('delete:line', getDeleteFunction('line', socket));
 
   socket.on('highlight:marker', getHighlightFunction('marker', socket));
@@ -156,7 +136,6 @@ browserServer.on('connection', function (socket) {
 
   socket.emit('set:points', _.values(points));
   socket.emit('set:markers', _.values(markers));
-  socket.emit('set:polygons', _.values(polygons));
   socket.emit('set:lines', _.values(lines));
   setInterval(function () {
     var beforeNow = new Date(new Date - config.pointTTL);
