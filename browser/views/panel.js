@@ -4,10 +4,9 @@ define('views/panel', [
   'utils/colors',
   'map',
   'hbs!templates/markerPanel',
-  'hbs!templates/polygonPanel',
   'hbs!templates/linePanel',
   'hbs!templates/objectsPanel'
-], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, Colors, map, markerPanelTemplate, polygonPanelTemplate, linePanelTemplate, objectsPanelTemplate) {
+], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, Colors, map, markerPanelTemplate, linePanelTemplate, objectsPanelTemplate) {
   $.fn.highlight = function () {
     $(this).each(function () {
       var el = $(this);
@@ -126,39 +125,9 @@ define('views/panel', [
   });
 
 
-  var PolygonView = PanelView.extend({
-    template: polygonPanelTemplate,
-    className: 'polygonPanel',
-    model: models.Polygon,
-    draw: false,
-    bindings: {
-      name: '[name=name]',
-      color: {
-        selector: '[name=color]',
-        converter: colorConverter
-      }
-    },
-    events: {
-      'click .delete': 'onDelete',
-      'click .draw': 'onDraw'
-    },
-    onDelete: function () {
-      this.model.destroy();
-    },
-    onDraw: function () {
-      vent.trigger('edit:polygon', this.model.id);
-    },
-
-    onShow: function () {
-      this.modelBinder = new ModelBinder();
-      this.modelBinder.bind(this.model, this.el, this.bindings);
-      this.initJSC();
-    }
-  });
-
   var LineView = PanelView.extend({
     template: linePanelTemplate,
-    className: 'polygonPanel',
+    className: 'linePanel',
     model: models.Line,
     ui: {
       icon: '.icon',
@@ -213,9 +182,6 @@ define('views/panel', [
     getChildView: function (model) {
       if (model.modelType == 'marker') {
         return MarkerView;
-      }
-      if (model.modelType == 'polygon') {
-        return PolygonView;
       }
       if (model.modelType == 'line') {
         return LineView;

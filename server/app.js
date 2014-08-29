@@ -17,15 +17,6 @@ var markers = {
 };
 
 var lines = {
-  start: {
-    id: 'start',
-    coordinates: [
-      [55.54954, 37.82158],
-      [55.44954, 37.42158],
-      [55.64954, 37.22158],
-      [55.44954, 37.12158]
-    ]
-  }
 };
 
 // Create server for devices
@@ -60,7 +51,7 @@ var getObjects = function (modelName) {
     objects = lines;
   }
   return objects;
-}
+};
 
 var getAddFunction = function (modelName, socket) {
   var objects = getObjects(modelName);

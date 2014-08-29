@@ -92,68 +92,6 @@ define('views/map', [
     }
   });
 
-  var PolygonMapView = MapObjectView.extend({
-    onRender: function () {
-      var model = this.model;
-      var geoObject = this.geoObject;
-      this.listenTo(model, 'change:coordinates', function (model) {
-        this.geoObject.geometry.setCoordinates(model.get('coordinates'));
-      });
-
-      this.listenTo(model, 'change:name', function () {
-        var name = model.get('name');
-      });
-
-      this.listenTo(model, 'change:color', function () {
-        var color = model.get('color');
-        var hexColor = colorName2Hex[color];
-        this.geoObject.options.set('strokeColor', hexColor);
-      });
-
-      geoObject.events.add('editorstatechange', function () {
-        var coordinates = geoObject.geometry.getCoordinates();
-        model.set('coordinates', coordinates);
-      });
-
-      map.events.add('click', function () {
-        geoObject.editor.stopEditing();
-      });
-
-      this.listenTo(vent, 'edit:polygon', function (modelId) {
-        if (model.id == modelId) {
-          if (geoObject.editor.state.get('editing')) {
-            geoObject.editor.stopEditing();
-          } else {
-            geoObject.editor.startEditing();
-          }
-        }
-      });
-    },
-    _renderTemplate: function () {
-      var model = this.model;
-      var color = model.get('color');
-      var hexColor = colorName2Hex[color];
-      var geoObject = new ymaps.GeoObject({
-        geometry: {
-          type: "Polygon",
-          coordinates: model.get('coordinates'),
-          draggable: true
-        }
-      }, {
-        fillColor: null,
-        strokeColor: hexColor,
-        strokeWidth: 3,
-        interactivityModel: 'default#transparent',
-        editorMenuManager: function (items) {
-          return [items[0]];
-        }
-      });
-
-      map.geoObjects.add(geoObject);
-      this.geoObject = geoObject;
-    }
-  });
-
   var LineMapView = MapObjectView.extend({
     onRender: function () {
       var model = this.model;
@@ -250,9 +188,6 @@ define('views/map', [
     getChildView: function (model) {
       if (model.modelType == 'marker') {
         return MarkerMapView;
-      }
-      if (model.modelType == 'polygon') {
-        return PolygonMapView;
       }
       if (model.modelType == 'line') {
         return LineMapView;

@@ -23,31 +23,6 @@ define('app', [
         socket.emit('add:marker', data);
       });
 
-      vent.on('add:polygon', function (originalData) {
-        var polygonId = (Math.random() + 1).toString(36).substring(7);
-        var cords = map.getCenter();
-        var bounds = map.getBounds();
-        var dx = (bounds[0][0] - bounds[1][0]) * 0.1;
-        var dy = (bounds[0][1] - bounds[1][1]) * 0.02;
-        var data = _.extend({
-          coordinates: [
-            [
-              [cords[0] + dx, cords[1] - dy],
-              [cords[0] + dx, cords[1] + dy],
-              [cords[0] - dx, cords[1] + dy],
-              [cords[0] - dx, cords[1] - dy]
-            ],
-            []
-          ]
-        }, originalData, {
-          id: polygonId
-        });
-        var model = new models.Polygon(data);
-        _this.geoObjectsCollection.add(model);
-        _this.mapObjectsView.children.findByModel(model).geoObject.editor.startEditing();
-        socket.emit('add:polygon', data);
-      });
-
       vent.on('add:line', function (originalData) {
         var lineId = (Math.random() + 1).toString(36).substring(7);
         var cords = map.getCenter();
