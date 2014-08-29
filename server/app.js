@@ -42,6 +42,15 @@ var browserServer = io(app, {
   logger: logger
 });
 
+global.sockets = [];
+
+eventEmitter.on('point', function (data) {
+  logger.log('debug', 'point: ', data);
+  _.each(sockets, function (socket) {
+    socket.emit('add:point', data);
+  });
+});
+
 var getObjects = function (modelName) {
   var objects;
   if (modelName == 'marker') {
@@ -115,14 +124,10 @@ browserServer.on('connection', function (socket) {
   socket.on('highlight:marker', getHighlightFunction('marker', socket));
   socket.on('highlight:line', getHighlightFunction('line', socket));
 
-  var addPoint = function (data) {
-    logger.log('debug', 'point: ', data);
-    socket.emit('add:point', data);
-  };
-  eventEmitter.on('point', addPoint);
+  global.sockets.push(socket);
 
   socket.on('disconnect', function () {
-    eventEmitter.removeListener('point', addPoint);
+    global.sockets.pop(socket);
   });
 
   socket.emit('set:points', _.values(points));
