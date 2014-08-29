@@ -100,6 +100,7 @@ define('models', [
     return function(data){
       collection.every(function (model) {
         if (model.modelType == modelType) {
+          model.syncBlock = true;
           model.destroy();
         }
       });
