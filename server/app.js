@@ -47,7 +47,7 @@ global.sockets = [];
 eventEmitter.on('point', function (data) {
   logger.log('debug', 'point: ', data);
   _.each(sockets, function (socket) {
-    socket.emit('add:point', data);
+    socket.emit('set:point', data);
   });
 });
 
@@ -58,6 +58,9 @@ var getObjects = function (modelName) {
   }
   if (modelName == 'line') {
     objects = lines;
+  }
+  if (modelName == 'point') {
+    objects = points;
   }
   return objects;
 };

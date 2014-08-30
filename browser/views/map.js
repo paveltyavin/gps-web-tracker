@@ -92,6 +92,39 @@ define('views/map', [
     }
   });
 
+  var PointMapView = MapObjectView.extend({
+    onRender: function () {
+      var model = this.model;
+      var geoObject = this.geoObject;
+      var _this = this;
+
+      this.listenTo(model, 'change:lat, change:lng', function () {
+        var lat = model.get('lat');
+        var lng = model.get('lng');
+        _this.geoObject.geometry.setCoordinates([lat, lng])
+      });
+
+    },
+    _renderTemplate: function () {
+      var model = this.model;
+      var geoObject = new ymaps.GeoObject({
+        geometry: {
+          type: "Point",
+          coordinates: [model.get('lat'), model.get('lng')]
+        },
+        properties: {
+          iconContent: model.get('id')
+        }
+      }, {
+        preset: 'islands#blackStretchyIcon'
+      });
+
+      map.geoObjects.add(geoObject);
+      this.geoObject = geoObject;
+      return this;
+    }
+  });
+
   var LineMapView = MapObjectView.extend({
     onRender: function () {
       var model = this.model;
@@ -191,6 +224,9 @@ define('views/map', [
       }
       if (model.modelType == 'line') {
         return LineMapView;
+      }
+      if (model.modelType == 'point') {
+        return PointMapView;
       }
     },
     render: function () {

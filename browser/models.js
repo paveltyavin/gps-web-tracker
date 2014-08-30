@@ -43,8 +43,8 @@ define('models', [
         }
       });
 
-      _this.on('highlight', function(){
-        if (!_this.syncBlock){
+      _this.on('highlight', function () {
+        if (!_this.syncBlock) {
           socket.emit('highlight:' + _this.modelType, _this.id)
         }
       });
@@ -65,20 +65,6 @@ define('models', [
     modelType: 'marker',
     defaults: {
       color: 'black'
-    },
-    setLng: function(){
-      debugger
-    },
-    setLat: function(){
-      debugger
-    }
-  });
-
-
-  var Polygon = GeoModel.extend({
-    modelType: 'polygon',
-    defaults: {
-      color: 'black'
     }
   });
 
@@ -89,15 +75,19 @@ define('models', [
     }
   });
 
-  var getModel = function(modelType){
-    if (modelType == 'polygon') return Polygon;
+  var Point = GeoModel.extend({
+    modelType: 'point'
+  });
+
+  var getModel = function (modelType) {
     if (modelType == 'marker') return Marker;
     if (modelType == 'line') return Line;
+    if (modelType == 'point') return Point;
   };
 
-  var getSetFunction = function(modelType, collection){
+  var getSetFunction = function (modelType, collection) {
     var Model = getModel(modelType);
-    return function(data){
+    return function (data) {
       collection.every(function (model) {
         if (model.modelType == modelType) {
           model.syncBlock = true;
@@ -109,10 +99,27 @@ define('models', [
       });
     }
   };
-  var getAddFunction = function(modelType, view){
+  var getAddFunction = function (modelType, collection) {
     var Model = getModel(modelType);
-    return function(data){
-      view.add(new Model(data));
+    return function (data) {
+      collection.add(new Model(data));
+    }
+  };
+
+  var getSetPointFunction = function (collection) {
+    return function (data) {
+      var point;
+      collection.each(function (model) {
+        if ((model.modelType == 'point') && (model.id == data.id)) {
+          point = model;
+          point.set(data);
+        }
+      });
+      if (!point){
+        point = new Point(data);
+        point.syncBlock = true;
+        collection.add(point);
+      }
     }
   };
 
@@ -120,19 +127,21 @@ define('models', [
     initialize: function () {
       var socket = reqres.request('socket');
       var _this = this;
-      socket.on('add:marker',getAddFunction('marker', _this));
-      socket.on('add:polygon',getAddFunction('polygon', _this));
-      socket.on('add:line',getAddFunction('line', _this));
+      socket.on('add:marker', getAddFunction('marker', _this));
+      socket.on('add:polygon', getAddFunction('polygon', _this));
+      socket.on('add:line', getAddFunction('line', _this));
 
       socket.on('set:markers', getSetFunction('marker', _this));
       socket.on('set:polygons', getSetFunction('polygon', _this));
       socket.on('set:lines', getSetFunction('line', _this));
+
+      socket.on('set:point', getSetPointFunction(_this));
     }
   });
 
   return {
     Marker: Marker,
-    Polygon: Polygon,
+    Point: Point,
     Line: Line,
     GeoObjectsCollection: GeoObjectsCollection
   }

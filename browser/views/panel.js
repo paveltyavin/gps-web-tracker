@@ -4,9 +4,10 @@ define('views/panel', [
   'utils/colors',
   'map',
   'hbs!templates/markerPanel',
+  'hbs!templates/pointPanel',
   'hbs!templates/linePanel',
   'hbs!templates/objectsPanel'
-], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, Colors, map, markerPanelTemplate, linePanelTemplate, objectsPanelTemplate) {
+], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, Colors, map, markerPanelTemplate, pointPanelTemplate, linePanelTemplate, objectsPanelTemplate) {
   $.fn.highlight = function () {
     $(this).each(function () {
       var el = $(this);
@@ -73,7 +74,7 @@ define('views/panel', [
         sel.setColor(hexColor);
       });
     },
-    onBeforeClose: function(){
+    onBeforeClose: function () {
       var sel = this.$el.find('input[name=\'color\']');
       sel.closeChooser();
     }
@@ -105,7 +106,7 @@ define('views/panel', [
       this.modelBinder.bind(this.model, this.el, this.bindings);
       var _this = this;
       this.listenTo(this.model, 'highlight', function () {
-        if (_this.blockHighlight){
+        if (_this.blockHighlight) {
           return
         }
         _this.$el.find('input[name=\'name\']').highlight();
@@ -115,12 +116,27 @@ define('views/panel', [
       });
       _this.ui.circle.attr('src', 'img/circle/' + this.model.get('color') + '.png');
 
-      _this.ui.circle.on('click', function(){
+      _this.ui.circle.on('click', function () {
         _this.blockHighlight = true;
         _this.model.trigger('highlight');
         delete _this.blockHighlight;
       });
       this.initJSC();
+    }
+  });
+
+
+  var PointView = PanelView.extend({
+    template: pointPanelTemplate,
+    className: 'pointPanel',
+    model: models.Point,
+    bindings: {
+      name: '.name'
+    },
+    onShow: function () {
+      this.modelBinder = new ModelBinder();
+      this.modelBinder.bind(this.model, this.el, this.bindings);
+      var _this = this;
     }
   });
 
@@ -157,7 +173,7 @@ define('views/panel', [
 
       var _this = this;
       this.listenTo(this.model, 'highlight', function () {
-        if (_this.blockHighlight){
+        if (_this.blockHighlight) {
           return
         }
         _this.$el.find('input[name=\'name\']').highlight();
@@ -168,7 +184,7 @@ define('views/panel', [
       _this.ui.diaginalLine.css('background-color', colorName2Hex[this.model.get('color')]);
 
 
-      _this.ui.icon.on('click', function(){
+      _this.ui.icon.on('click', function () {
         _this.blockHighlight = true;
         _this.model.trigger('highlight');
         delete _this.blockHighlight;
@@ -185,6 +201,9 @@ define('views/panel', [
       }
       if (model.modelType == 'line') {
         return LineView;
+      }
+      if (model.modelType == 'point') {
+        return PointView;
       }
     },
     childViewContainer: ".pannelInner",
