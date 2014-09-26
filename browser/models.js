@@ -123,6 +123,24 @@ define('models', [
     }
   };
 
+  var getSetPointsFunction = function (collection) {
+    return function (data) {
+      var point;
+      return
+      collection.each(function (model) {
+        if ((model.modelType == 'point') && (model.id == data.id)) {
+          point = model;
+          point.set(data);
+        }
+      });
+      if (!point){
+        point = new Point(data);
+        point.syncBlock = true;
+        collection.add(point);
+      }
+    }
+  };
+
   var GeoObjectsCollection = backbone.Collection.extend({
     initialize: function () {
       var socket = reqres.request('socket');
@@ -136,6 +154,7 @@ define('models', [
       socket.on('set:lines', getSetFunction('line', _this));
 
       socket.on('set:point', getSetPointFunction(_this));
+      socket.on('set:points', getSetPointsFunction(_this));
     }
   });
 

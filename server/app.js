@@ -1,6 +1,3 @@
-var events = require('events');
-var eventEmitter = new events.EventEmitter();
-
 var config = require('./config');
 var logger = require('./logger');
 var _ = require('underscore');
@@ -22,34 +19,21 @@ var lines = {
 // Create server for devices
 var deviceServer = jot.createServer(config.devicePort);
 deviceServer.on('connection', function (socket) {
+  logger.log('debug', 'deviceServer connection');
   socket.on('data', function (data) {
     logger.log('debug', 'device message: ', data);
     data.modified = new Date;
     if ((data.lat) && (data.lng) && (data.id)) {
       points[data.id] = data;
-      eventEmitter.emit('point', data);
+      browserServer.emit('set:point', data);
     }
   });
 });
 
 deviceServer.listen(config.devicePort);
 
-//Create server for browser
 var app = http.createServer();
 app.listen(config.browserPort);
-
-var browserServer = io(app, {
-  logger: logger
-});
-
-global.sockets = [];
-
-eventEmitter.on('point', function (data) {
-  logger.log('debug', 'point: ', data);
-  _.each(sockets, function (socket) {
-    socket.emit('set:point', data);
-  });
-});
 
 var getObjects = function (modelName) {
   var objects;
@@ -114,7 +98,24 @@ var getHighlightFunction = function (modelName, socket) {
   }
 };
 
+setInterval(function(){
+  var now = new Date;
+  _.each(points, function(point){
+    if (point.modified < now - config.pointTTL){
+      delete points[point.id];
+    }
+  });
+}, config.pointCheckTime);
+
+
+//Create server for browser
+var browserServer = io(app, {
+  logger: logger
+});
+
+
 browserServer.on('connection', function (socket) {
+  logger.log('debug', 'browserServer connection');
   socket.on('add:marker', getAddFunction('marker', socket));
   socket.on('add:line', getAddFunction('line', socket));
 
@@ -126,12 +127,6 @@ browserServer.on('connection', function (socket) {
 
   socket.on('highlight:marker', getHighlightFunction('marker', socket));
   socket.on('highlight:line', getHighlightFunction('line', socket));
-
-  global.sockets.push(socket);
-
-  socket.on('disconnect', function () {
-    global.sockets.pop(socket);
-  });
 
   socket.emit('set:points', _.values(points));
   socket.emit('set:markers', _.values(markers));
