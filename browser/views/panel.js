@@ -161,7 +161,9 @@ define('views/panel', [
       'click .draw': 'onDraw'
     },
     onDelete: function () {
-      this.model.destroy();
+      if (confirm('Удалить линию?')){
+        this.model.destroy();
+      }
     },
     onDraw: function () {
       vent.trigger('edit:line', this.model.id);
