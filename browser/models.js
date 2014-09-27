@@ -124,20 +124,22 @@ define('models', [
   };
 
   var getSetPointsFunction = function (collection) {
-    return function (data) {
-      var point;
-      return
-      collection.each(function (model) {
-        if ((model.modelType == 'point') && (model.id == data.id)) {
-          point = model;
-          point.set(data);
+    return function (manyPointsData) {
+      _.each(manyPointsData, function(data){
+        var point;
+        collection.each(function (model) {
+          if ((model.modelType == 'point') && (model.id == data.id)) {
+            point = model;
+            point.set(data);
+          }
+        });
+        if (!point){
+          point = new Point(data);
+          point.syncBlock = true;
+          collection.add(point);
         }
+
       });
-      if (!point){
-        point = new Point(data);
-        point.syncBlock = true;
-        collection.add(point);
-      }
     }
   };
 

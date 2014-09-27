@@ -34,26 +34,25 @@ var LineSchema = new Schema({
 });
 var Line = mongoose.model('line', LineSchema);
 
-Point.find({}, function (err, docs) {
-  console.log(docs)
-});
-
 // Create server for devices
 var deviceServer = jot.createServer(config.devicePort);
 deviceServer.on('connection', function (socket) {
   logger.log('debug', 'deviceServer connection');
   socket.on('data', function (data) {
     logger.log('debug', 'device message: ', data);
-    data.modified = new Date;
+    data.modified = new Date();
     if ((data.lat) && (data.lng) && (data.id)) {
       Point.findOne({id: data.id}, function (err, doc) {
         if (doc) {
           doc.lat = data.lat;
           doc.lng = data.lng;
+          doc.modified = data.modified;
           doc.save();
+          logger.log('debug', 'old Point', data);
         } else {
           var point = new Point(data);
           point.save();
+          logger.log('debug', 'new Point', data);
         }
       });
       browserServer.emit('set:point', data);
@@ -141,7 +140,9 @@ var getHighlightFunction = function (modelName, socket) {
 };
 
 setInterval(function () {
-  Point.remove({modified: {$lt: new Date - config.pointTTL}}, function () {
+  var old_date = new Date(new Date - config.pointTTL);
+  Point.remove({modified: {$not: {$gt: old_date}}}, function (err, docs) {
+    logger.log('debug', 'remove points');
   });
 }, config.pointCheckTime);
 
@@ -168,6 +169,10 @@ browserServer.on('connection', function (socket) {
 
   Point.find({}, function (err, points) {
     socket.emit('set:points', points);
+  });
+
+  Point.find({}, function (err, points) {
+    console.log(points)
   });
 
   Marker.find({}, function (err, markers) {
