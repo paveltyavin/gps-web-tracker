@@ -4,17 +4,39 @@ var _ = require('underscore');
 var jot = require('json-over-tcp');
 var io = require('socket.io');
 var http = require('http');
-var points = {};
-var markers = {
-  start: {
-    id: 'start',
-    lat: 55.74954,
-    lng: 37.62158
+var mongoose = require('mongoose');
+mongoose.connect('mongodb://127.0.0.1:27017/gps-web-tracker', function (error) {
+  if (error) {
+    console.log(error);
   }
-};
+});
 
-var lines = {
-};
+
+var Schema = mongoose.Schema;
+var PointSchema = new Schema({
+  id: String,
+  lng: Number,
+  lat: Number,
+  modified: { type: Date, default: Date.now }
+});
+var Point = mongoose.model('points', PointSchema);
+
+var MarkerSchema = new Schema({
+  id: String,
+  lng: Number,
+  lat: Number
+});
+var Marker = mongoose.model('markers', MarkerSchema);
+
+var LineSchema = new Schema({
+  id: String,
+  coordinates: Object
+});
+var Line = mongoose.model('line', LineSchema);
+
+Point.find({}, function (err, docs) {
+  console.log(docs)
+});
 
 // Create server for devices
 var deviceServer = jot.createServer(config.devicePort);
@@ -24,7 +46,16 @@ deviceServer.on('connection', function (socket) {
     logger.log('debug', 'device message: ', data);
     data.modified = new Date;
     if ((data.lat) && (data.lng) && (data.id)) {
-      points[data.id] = data;
+      Point.findOne({id: data.id}, function (err, doc) {
+        if (doc) {
+          doc.lat = data.lat;
+          doc.lng = data.lng;
+          doc.save();
+        } else {
+          var point = new Point(data);
+          point.save();
+        }
+      });
       browserServer.emit('set:point', data);
     }
   });
@@ -35,57 +66,68 @@ deviceServer.listen(config.devicePort);
 var app = http.createServer();
 app.listen(config.browserPort);
 
-var getObjects = function (modelName) {
-  var objects;
+var getModel = function (modelName) {
+  var Model;
   if (modelName == 'marker') {
-    objects = markers;
+    Model = Marker;
   }
   if (modelName == 'line') {
-    objects = lines;
+    Model = Line;
   }
   if (modelName == 'point') {
-    objects = points;
+    Model = Point;
   }
-  return objects;
+  return Model;
 };
 
 var getAddFunction = function (modelName, socket) {
-  var objects = getObjects(modelName);
+  var Model = getModel(modelName);
 
   return function (data) {
     var objectId = data.id;
     if (!objectId) {
       return
     }
-    var object = objects[objectId];
-    if (object === undefined) {
-      objects[objectId] = data;
-    } else {
-      objects[objectId] = _.extend(object, data);
-    }
+    Model.findOne({id: objectId}, function (err, object) {
+      if (object) {
+        object.update(data);
+        object.save()
+      } else {
+        object = new Model(data);
+        object.save();
+      }
 
-    logger.log('debug', 'add objectId: ', objectId);
-    socket.broadcast.emit('add:' + modelName, objects[objectId]);
+      logger.log('debug', 'add objectId: ', objectId);
+      socket.broadcast.emit('add:' + modelName, object);
+    });
+
   }
 };
 
 var getUpdateFunction = function (modelName, socket) {
-  var objects = getObjects(modelName);
-
+  var Model = getModel(modelName);
   return function (data) {
     var objectId = data.id;
-    objects[objectId] = data;
+    if (data._id) {
+      delete data._id;
+    }
+    Model.update({id: objectId}, data, {}, function () {
+    });
+    logger.log('debug', 'update ' + modelName + 'Id: ', objectId, 'data: ', data);
     logger.log('debug', 'update ' + modelName + 'Id: ', objectId);
-    socket.broadcast.emit('update:' + modelName, objects[objectId]);
+    socket.broadcast.emit('update:' + modelName, data);
   }
 };
 
 var getDeleteFunction = function (modelName, socket) {
-  var objects = getObjects(modelName);
-
+  var Model = getModel(modelName);
   return function (data) {
     var objectId = data.id;
-    delete objects[objectId];
+    if (data._id) {
+      delete data._id;
+    }
+    Model.remove({id: objectId}, function () {
+    });
     logger.log('debug', 'delete ' + modelName + 'Id: ', objectId);
     socket.broadcast.emit('delete:' + modelName, objectId);
   }
@@ -98,12 +140,8 @@ var getHighlightFunction = function (modelName, socket) {
   }
 };
 
-setInterval(function(){
-  var now = new Date;
-  _.each(points, function(point){
-    if (point.modified < now - config.pointTTL){
-      delete points[point.id];
-    }
+setInterval(function () {
+  Point.remove({modified: {$lt: new Date - config.pointTTL}}, function () {
   });
 }, config.pointCheckTime);
 
@@ -128,7 +166,15 @@ browserServer.on('connection', function (socket) {
   socket.on('highlight:marker', getHighlightFunction('marker', socket));
   socket.on('highlight:line', getHighlightFunction('line', socket));
 
-  socket.emit('set:points', _.values(points));
-  socket.emit('set:markers', _.values(markers));
-  socket.emit('set:lines', _.values(lines));
+  Point.find({}, function (err, points) {
+    socket.emit('set:points', points);
+  });
+
+  Marker.find({}, function (err, markers) {
+    socket.emit('set:markers', markers);
+  });
+
+  Line.find({}, function (err, lines) {
+    socket.emit('set:lines', lines);
+  });
 });
