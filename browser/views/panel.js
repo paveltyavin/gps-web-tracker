@@ -238,8 +238,15 @@ define('views/panel', [
         var cordsStr = ev.target.value;
         var cords;
         try {
-          cords = cordsStr.split(',');
-          cords = [parseFloat(cords[0]), parseFloat(cords[1])]
+          cords = cordsStr.split(/,| /);
+          cords = _.map(cords, function(x) {return parseFloat(x)});
+          cords = _.filter(cords, function(x){
+            if (_.isNaN(x)) return false
+            return true
+          });
+          if (cords.length!=2){
+            return
+          }
         } catch (TypeError) {
           return
         }
