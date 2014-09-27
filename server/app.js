@@ -24,13 +24,17 @@ var Point = mongoose.model('points', PointSchema);
 var MarkerSchema = new Schema({
   id: String,
   lng: Number,
-  lat: Number
+  lat: Number,
+  color: String,
+  name: String
 });
 var Marker = mongoose.model('markers', MarkerSchema);
 
 var LineSchema = new Schema({
   id: String,
-  coordinates: Object
+  color: String,
+  coordinates: Object,
+  name: String
 });
 var Line = mongoose.model('line', LineSchema);
 
@@ -110,7 +114,8 @@ var getUpdateFunction = function (modelName, socket) {
     if (data._id) {
       delete data._id;
     }
-    Model.update({id: objectId}, data, {}, function () {
+    Model.update({id: objectId}, data, {}, function (err, docs) {
+      logger.log('debug', docs);
     });
     logger.log('debug', 'update ' + modelName + 'Id: ', objectId, 'data: ', data);
     logger.log('debug', 'update ' + modelName + 'Id: ', objectId);
@@ -140,7 +145,7 @@ var getHighlightFunction = function (modelName, socket) {
 };
 
 setInterval(function () {
-  var old_date = new Date(new Date - config.pointTTL);
+  var old_date = new Date(new Date() - config.pointTTL);
   Point.remove({modified: {$not: {$gt: old_date}}}, function (err, docs) {
     logger.log('debug', 'remove points');
   });
