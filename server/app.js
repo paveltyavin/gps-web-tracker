@@ -146,7 +146,9 @@ var getHighlightFunction = function (modelName, socket) {
 setInterval(function () {
   var old_date = new Date(new Date() - config.pointTTL);
   Point.remove({modified: {$not: {$gt: old_date}}}, function (err, docs) {
-    logger.log('debug', 'remove points');
+    if (docs){
+      logger.log('debug', 'remove points');
+    }
   });
 }, config.pointCheckTime);
 

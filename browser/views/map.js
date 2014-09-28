@@ -7,16 +7,7 @@ define('views/map', [
   var colorName2Hex = Colors.colorName2Hex;
   var hex2ColorName = Colors.hex2ColorName;
 
-  var MapObjectView = marionette.ItemView.extend({
-    onBeforeDestroy: function () {
-      if (this.geoObject) {
-        map.geoObjects.remove(this.geoObject);
-        delete this.geoObject;
-      }
-    }
-  });
-
-  var MarkerMapView = MapObjectView.extend({
+  var MarkerMapView = marionette.ItemView.extend({
     onRender: function () {
       var model = this.model;
       var geoObject = this.geoObject;
@@ -53,6 +44,12 @@ define('views/map', [
       geoObject.events.add('click', function () {
         model.trigger('highlight');
       });
+    },
+    onBeforeDestroy: function () {
+      if (this.geoObject) {
+        map.geoObjects.remove(this.geoObject);
+        delete this.geoObject;
+      }
     },
     highlight: function () {
       var t = 0;
@@ -92,7 +89,13 @@ define('views/map', [
     }
   });
 
-  var PointMapView = MapObjectView.extend({
+  var PointMapView = marionette.ItemView.extend({
+    onBeforeDestroy: function () {
+      if (this.geoObject) {
+        map.geoObjects.remove(this.geoObject);
+        delete this.geoObject;
+      }
+    },
     onRender: function () {
       var model = this.model;
       var geoObject = this.geoObject;
@@ -125,7 +128,7 @@ define('views/map', [
     }
   });
 
-  var LineMapView = MapObjectView.extend({
+  var LineMapView = marionette.ItemView.extend({
     onRender: function () {
       var model = this.model;
       var _this = this;
@@ -154,9 +157,7 @@ define('views/map', [
         model.set('coordinates', coordinates);
       });
 
-      map.events.add('click', function () {
-        geoObject.editor.stopEditing();
-      });
+      map.events.add('click', this.editing);
 
       geoObject.events.add('click', function () {
         model.trigger('highlight');
@@ -171,6 +172,20 @@ define('views/map', [
           }
         }
       });
+    },
+    initialize: function(){
+      var _this = this;
+      this.editing = function () {
+        _this.geoObject.editor.stopEditing();
+      };
+    },
+    onBeforeDestroy: function(){
+      var _this = this;
+      if (this.geoObject) {
+        map.geoObjects.remove(this.geoObject);
+        delete this.geoObject;
+      }
+      map.events.remove('click', _this.editing);
     },
     highlight: function () {
       var geoObject = this.geoObject;

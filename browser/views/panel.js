@@ -25,7 +25,7 @@ define('views/panel', [
           $(this).remove();
         });
     });
-  }
+  };
 
   var colorName2Hex = Colors.colorName2Hex;
   var hex2ColorName = Colors.hex2ColorName;
@@ -223,14 +223,22 @@ define('views/panel', [
     addLine: function () {
       vent.trigger('add:line');
     },
-    onRender: function () {
+    initialize: function(){
       var _this = this;
-      map.events.add('actiontick', function (ev) {
+      this.actiontick = function (ev) {
         var tick = ev.originalEvent.tick;
         var cords = map.options.get('projection').fromGlobalPixels(tick.globalPixelCenter, tick.zoom);
         var normCords = [cords[0].toFixed(4), cords[1].toFixed(4)].join(', ');
         _this.ui.cords.val(normCords);
-      });
+      }
+    },
+    onBeforeDestroy: function(){
+      var _this = this;
+      map.events.remove('actiontick', _this.actiontick);
+    },
+    onRender: function () {
+      var _this = this;
+      map.events.add('actiontick', _this.actiontick);
 
       var cords = map.getCenter();
       var normCords = [cords[0].toFixed(4), cords[1].toFixed(4)].join(', ');
