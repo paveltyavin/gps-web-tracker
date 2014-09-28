@@ -1,7 +1,7 @@
 define('models', [
-  'jquery', 'backbone', 'marionette',
+  'jquery', 'backbone', 'marionette', 'underscore',
   'map', 'vent', 'reqres'
-], function ($, backbone, marionette, map, vent, reqres) {
+], function ($, backbone, marionette, _, map, vent, reqres) {
 
   var GeoModel = backbone.Model.extend({
     sync: function (method, model, options) {
@@ -126,19 +126,37 @@ define('models', [
   var getSetPointsFunction = function (collection) {
     return function (manyPointsData) {
       _.each(manyPointsData, function(data){
-        var point;
+        var used = false;
         collection.each(function (model) {
           if ((model.modelType == 'point') && (model.id == data.id)) {
-            point = model;
-            point.set(data);
+            used = true;
+            model.set(data);
+            model.checked = true;
           }
         });
-        if (!point){
-          point = new Point(data);
+        if (!used){
+          var point = new Point(data);
           point.syncBlock = true;
+          point.checked = true;
           collection.add(point);
         }
 
+      });
+
+      var modelsToDestory = [];
+
+      collection.each(function (model) {
+        if (model.modelType == 'point') {
+          if (model.checked){
+            delete model.checked;
+          } else {
+            modelsToDestory.push(model);
+          }
+        }
+      });
+
+      _.each(modelsToDestory, function(model){
+        model.destroy();
       });
     }
   };

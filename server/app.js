@@ -177,10 +177,6 @@ browserServer.on('connection', function (socket) {
     socket.emit('set:points', points);
   });
 
-  Point.find({}, function (err, points) {
-    console.log(points)
-  });
-
   Marker.find({}, function (err, markers) {
     socket.emit('set:markers', markers);
   });
@@ -189,3 +185,9 @@ browserServer.on('connection', function (socket) {
     socket.emit('set:lines', lines);
   });
 });
+
+setInterval(function () {
+  Point.find({}, function (err, points) {
+    browserServer.emit('set:points', points);
+  });
+}, config.pointCheckTime);

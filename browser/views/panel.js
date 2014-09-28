@@ -208,7 +208,7 @@ define('views/panel', [
         return PointView;
       }
     },
-    childViewContainer: ".pannelInner",
+    childViewContainer: ".panelInner",
     template: objectsPanelTemplate,
     ui: {
       cords: '.cords'
