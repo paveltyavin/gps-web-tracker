@@ -57,7 +57,7 @@ define('app', [
       var socket = reqres.request('socket');
       socket.on('connect', function () {
         if (!isMobile.any) {
-          $('#panel').css('display', 'inline-block');
+          $('#panel').css('display', 'block');
           _this.addRegions({
             panelRegion: "#panel"
           });
@@ -66,6 +66,16 @@ define('app', [
           });
           _this.panelRegion.show(_this.panelObjectsView);
         }
+
+        if (isMobile.any && false){
+          $('#panelBottom').css('display', 'block');
+          _this.addRegions({
+            panelBottomRegion: "#panelBottom"
+          });
+          _this.panelBottomView = new panelViews.PanelBottomView();
+          _this.panelBottomRegion.show(_this.panelBottomView);
+        }
+
         _this.mapObjectsView = new mapViews.MapObjectsView({
           collection: _this.geoObjectsCollection
         });

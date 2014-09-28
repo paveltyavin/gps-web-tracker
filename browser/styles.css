@@ -28,6 +28,25 @@ button:focus {
     overflow-y: scroll;
 }
 
+#panelBottom{
+    position: fixed;
+    bottom:0;
+    background-color: #fff;
+    height: 34px;
+    text-align: center;
+    display: none;
+    width: 100%;
+}
+.panelBottomInner{
+    padding-top: 4px;
+    padding-bottom: 4px;
+}
+.panelBottomInner input[type=text]{
+    width:150px;
+}
+.panelBottomInner input[type=checkbox]{
+    width:20px;
+}
 .icon {
     display: inline-block;
     vertical-align: middle;

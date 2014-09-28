@@ -6,8 +6,9 @@ define('views/panel', [
   'hbs!templates/markerPanel',
   'hbs!templates/pointPanel',
   'hbs!templates/linePanel',
-  'hbs!templates/objectsPanel'
-], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, Colors, map, markerPanelTemplate, pointPanelTemplate, linePanelTemplate, objectsPanelTemplate) {
+  'hbs!templates/objectsPanel',
+  'hbs!templates/bottomPanel'
+], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, Colors, map, markerPanelTemplate, pointPanelTemplate, linePanelTemplate, objectsPanelTemplate, bottomPanelTemplate) {
   $.fn.highlight = function () {
     $(this).each(function () {
       var el = $(this);
@@ -265,12 +266,27 @@ define('views/panel', [
     }
   });
 
-  var TestView = marionette.View.extend({
-    template: markerPanelTemplate
+  var PanelBottomView = marionette.ItemView.extend({
+    template: bottomPanelTemplate,
+    className:'panelBottomInner',
+    getGeoLocation: function(){
+      var geolocation = ymaps.geolocation;
+
+      geolocation.get({
+        provider: 'browser'
+      }).then(function (result) {
+          var cords = result.geoObjects.position;
+          console.log('cords', cords);
+        });
+
+    },
+    onShow: function(){
+      setInterval(this.getGeoLocation, 1000);
+    }
   });
 
   return {
     PanelObjectsView: PanelObjectsView,
-    TestView: TestView
+    PanelBottomView: PanelBottomView
   }
 });
