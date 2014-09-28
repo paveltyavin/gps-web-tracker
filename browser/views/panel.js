@@ -161,7 +161,7 @@ define('views/panel', [
       'click .draw': 'onDraw'
     },
     onDelete: function () {
-      if (confirm('Удалить линию?')){
+      if (confirm('Delete line?')){
         this.model.destroy();
       }
     },
