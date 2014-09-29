@@ -269,19 +269,38 @@ define('views/panel', [
   var PanelBottomView = marionette.ItemView.extend({
     template: bottomPanelTemplate,
     className:'panelBottomInner',
-    getGeoLocation: function(){
-      var geolocation = ymaps.geolocation;
-
-      geolocation.get({
-        provider: 'browser'
-      }).then(function (result) {
-          var cords = result.geoObjects.position;
-          console.log('cords', cords);
-        });
-
+    bindings: {
+      'name': '.point-name',
+      'share': '.point-share'
     },
+
     onShow: function(){
-      setInterval(this.getGeoLocation, 1000);
+      vent.trigger('add:point');
+      var _this = this;
+      this.intervalId = setInterval(function(){
+
+        var geolocation = ymaps.geolocation;
+        geolocation.get({
+          provider: 'browser'
+        }).then(function (result) {
+            var cords = result.geoObjects.position;
+            var data = {
+              lat: cords[0],
+              lng: cords[1]
+            };
+            _this.model.set(data);
+          });
+
+      }, 20000);
+
+      if (this.model){
+        this.modelBinder = new ModelBinder();
+        this.modelBinder.bind(this.model, this.el, this.bindings);
+      }
+    },
+
+    onBeforeDestroy: function(){
+      window.clearInterval(this.intervalId);
     }
   });
 

@@ -14,6 +14,7 @@ mongoose.connect('mongodb://127.0.0.1:27017/gps-web-tracker', function (error) {
 var Schema = mongoose.Schema;
 var PointSchema = new Schema({
   id: String,
+  name: String,
   lng: Number,
   lat: Number,
   modified: { type: Date, default: Date.now }
@@ -48,6 +49,7 @@ deviceServer.on('connection', function (socket) {
       Point.findOne({id: data.id}, function (err, doc) {
         if (doc) {
           doc.lat = data.lat;
+          doc.name = data.id;
           doc.lng = data.lng;
           doc.modified = data.modified;
           doc.save();
@@ -114,7 +116,6 @@ var getUpdateFunction = function (modelName, socket) {
       delete data._id;
     }
     Model.update({id: objectId}, data, {}, function (err, docs) {
-      logger.log('debug', docs);
     });
     logger.log('debug', 'update ' + modelName + 'Id: ', objectId, 'data: ', data);
     logger.log('debug', 'update ' + modelName + 'Id: ', objectId);
@@ -163,12 +164,15 @@ browserServer.on('connection', function (socket) {
   logger.log('debug', 'browserServer connection');
   socket.on('add:marker', getAddFunction('marker', socket));
   socket.on('add:line', getAddFunction('line', socket));
+  socket.on('add:point', getAddFunction('point', socket));
 
   socket.on('update:marker', getUpdateFunction('marker', socket));
   socket.on('update:line', getUpdateFunction('line', socket));
+  socket.on('update:point', getUpdateFunction('point', socket));
 
   socket.on('delete:marker', getDeleteFunction('marker', socket));
   socket.on('delete:line', getDeleteFunction('line', socket));
+  socket.on('delete:point', getDeleteFunction('point', socket));
 
   socket.on('highlight:marker', getHighlightFunction('marker', socket));
   socket.on('highlight:line', getHighlightFunction('line', socket));

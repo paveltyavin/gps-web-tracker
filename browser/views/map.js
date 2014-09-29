@@ -104,8 +104,15 @@ define('views/map', [
       this.listenTo(model, 'change:lat, change:lng', function () {
         var lat = model.get('lat');
         var lng = model.get('lng');
+        console.log('lat', lat);
         _this.geoObject.geometry.setCoordinates([lat, lng])
       });
+
+      this.listenTo(model, 'change:name', function () {
+        var name = model.get('name');
+        _this.geoObject.properties.set('iconContent', name);
+      });
+
 
     },
     _renderTemplate: function () {
@@ -116,7 +123,7 @@ define('views/map', [
           coordinates: [model.get('lat'), model.get('lng')]
         },
         properties: {
-          iconContent: model.get('id')
+          iconContent: model.get('name')
         }
       }, {
         preset: 'islands#blackStretchyIcon'

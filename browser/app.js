@@ -1,7 +1,7 @@
 define('app', [
-  'jquery', 'backbone', 'marionette', 'socket.io-client',
+  'jquery', 'backbone', 'marionette', 'underscore',  'socket.io-client',
   'map', 'vent', 'reqres', 'models', 'views/panel', 'views/map', 'config', 'utils/isMobile'
-], function ($, backbone, marionette, io, map, vent, reqres, models, panelViews, mapViews, config, isMobile) {
+], function ($, backbone, marionette, _, io, map, vent, reqres, models, panelViews, mapViews, config, isMobile) {
 
   var App = Marionette.Application.extend({
     initData: function () {
@@ -21,6 +21,19 @@ define('app', [
         });
         _this.geoObjectsCollection.add(new models.Marker(data));
         socket.emit('add:marker', data);
+      });
+
+      vent.on('add:point', function () {
+        var data = {
+          id: _this.pointId,
+          share: false
+        };
+        var point = new models.Point(data);
+        if (_this.panelBottomView) {
+          _this.panelBottomView.model = point;
+        }
+        _this.geoObjectsCollection.add(point);
+        socket.emit('add:point', data);
       });
 
       vent.on('add:line', function (originalData) {
@@ -67,7 +80,15 @@ define('app', [
           _this.panelRegion.show(_this.panelObjectsView);
         }
 
-        if (isMobile.any && false){
+        if (isMobile.any || true){
+          var pointId = localStorage.getItem("pointId");
+          if (!pointId){
+            pointId = '';
+            pointId = (Math.random() + 1).toString(36).substring(7);
+            localStorage.setItem("pointId", pointId);
+          }
+          _this.pointId = pointId;
+
           $('#panelBottom').css('display', 'block');
           _this.addRegions({
             panelBottomRegion: "#panelBottom"

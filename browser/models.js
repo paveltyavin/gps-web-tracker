@@ -9,6 +9,9 @@ define('models', [
       if (model.syncBlock) {
         return
       }
+      if (model.has('share') && !model.get('share')){
+        return
+      }
       if (window.debug) console.log('sync', method);
       socket.emit(method + ':' + model.modelType, model.toJSON());
     },
@@ -149,7 +152,7 @@ define('models', [
         if (model.modelType == 'point') {
           if (model.checked){
             delete model.checked;
-          } else {
+          } else if (!model.has('share')){
             modelsToDestory.push(model);
           }
         }
