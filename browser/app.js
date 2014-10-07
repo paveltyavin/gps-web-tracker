@@ -1,6 +1,6 @@
 define('app', [
   'jquery', 'backbone', 'marionette', 'underscore',  'socket.io-client',
-  'map', 'vent', 'reqres', 'models', 'views/panel', 'views/map', 'config', 'utils/isMobile'
+  'map', 'vent', 'reqres', 'models', 'views/panel', 'views/map', 'config', 'utils/isMobile', 'utils/rafModule'
 ], function ($, backbone, marionette, _, io, map, vent, reqres, models, panelViews, mapViews, config, isMobile) {
 
   var App = Marionette.Application.extend({
