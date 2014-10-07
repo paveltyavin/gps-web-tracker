@@ -1,3 +1,3 @@
-define(['jquery'], function(){
+define('utils/rafModule', ['jquery'], function(){
   console.log('rafModule');
 });
