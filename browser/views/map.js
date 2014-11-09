@@ -119,7 +119,7 @@ define('views/map', [
           iconContent: model.get('id')
         }
       }, {
-        preset: 'islands#blackStretchyIcon'
+        preset: 'islands#blackCircleIcon'
       });
 
       map.geoObjects.add(geoObject);
