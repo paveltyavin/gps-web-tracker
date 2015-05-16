@@ -1,8 +1,8 @@
 define('views/map', [
   'jquery', 'backbone', 'underscore', 'marionette', 'backbone.modelbinder', 'vent', 'reqres', 'models',
   'jquery-simple-color', 'utils/colors',
-  'map', 'json!wake.json'
-], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, Colors, map, wake) {
+  'map'
+], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, Colors, map) {
 
   var colorName2Hex = Colors.colorName2Hex;
   var hex2ColorName = Colors.hex2ColorName;
@@ -253,41 +253,44 @@ define('views/map', [
 
   var WakeObjectsView = marionette.ItemView.extend({
     addPlacesToCluster: function () {
-      var placemark_list = [];
-      var coord, data, game, idx, location, _i, _j, _len, _len1, _ref, _ref1;
+      var _this = this;
+      $.get('wake.json').then(function (wake) {
 
-      for (game in wake) {
-        _ref = wake[game].locations;
-        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-          location = _ref[_i];
-          _ref1 = location.coords;
-          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
-            coord = _ref1[_j];
-            idx = game + '|' + _i + '|' + _j;
-            data = {
-              name: location.name,
-              coords: coord,
-              codes: location.codes,
-              complexity: location.complexity
-            };
+        var placemark_list = [];
+        var coord, data, game, idx, location, _i, _j, _len, _len1, _ref, _ref1;
 
-            var prefs = {
-              balloonContentHeader: location.name,
-              balloonContentBody: '',
-              balloonContentFooter: ''
-            };
-            var style = {
-              preset: 'islands#circleDotIcon',
-              iconColor: '#1faee9'
-            };
-            var placemark = new ymaps.Placemark(coord, prefs, style);
-            placemark_list.push(placemark);
+        for (game in wake) {
+          _ref = wake[game].locations;
+          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+            location = _ref[_i];
+            _ref1 = location.coords;
+            for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+              coord = _ref1[_j];
+              idx = game + '|' + _i + '|' + _j;
+              data = {
+                name: location.name,
+                coords: coord,
+                codes: location.codes,
+                complexity: location.complexity
+              };
 
+              var prefs = {
+                balloonContentHeader: location.name,
+                balloonContentBody: '',
+                balloonContentFooter: ''
+              };
+              var style = {
+                preset: 'islands#circleDotIcon',
+                iconColor: '#1faee9'
+              };
+              var placemark = new ymaps.Placemark(coord, prefs, style);
+              placemark_list.push(placemark);
+
+            }
           }
         }
-      }
-
-      this.clusterer.add(placemark_list);
+        _this.clusterer.add(placemark_list);
+      });
     },
 
     render: function () {
@@ -300,7 +303,7 @@ define('views/map', [
 
       map.geoObjects.add(this.clusterer);
     },
-    destroy: function(){
+    destroy: function () {
       map.geoObjects.remove(this.clusterer);
     }
   });

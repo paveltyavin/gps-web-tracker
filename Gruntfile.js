@@ -48,7 +48,8 @@ module.exports = function (grunt) {
       main: {
         files: [
           // includes files within path
-          {expand: true, cwd: 'browser/', src: ['img/**'], dest: 'build/'}
+          {expand: true, cwd: 'browser/', src: ['img/**'], dest: 'build/'},
+          {expand: true, cwd: 'browser/', src: ['wake.json'], dest: 'build/'}
         ]
       }
     }
