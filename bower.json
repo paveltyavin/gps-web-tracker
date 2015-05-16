@@ -21,6 +21,7 @@
     "jquery": "~2.1.0",
     "marionette": "~2.1.0",
     "backbone.modelbinder": "~1.0.5",
-    "jquery-simple-color": "~1.2.1"
+    "jquery-simple-color": "~1.2.1",
+    "requirejs-json": "~0.0.3"
   }
 }

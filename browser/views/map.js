@@ -1,8 +1,8 @@
 define('views/map', [
   'jquery', 'backbone', 'underscore', 'marionette', 'backbone.modelbinder', 'vent', 'reqres', 'models',
   'jquery-simple-color', 'utils/colors',
-  'map'
-], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, Colors, map) {
+  'map', 'json!wake.json'
+], function ($, backbone, _, marionette, ModelBinder, vent, reqres, models, jsc, Colors, map, wake) {
 
   var colorName2Hex = Colors.colorName2Hex;
   var hex2ColorName = Colors.hex2ColorName;
@@ -56,9 +56,10 @@ define('views/map', [
       var T = 25;
       var y;
       var geoObject = this.geoObject;
+
       function frame() {
-        t ++;
-        y = 20*Math.sin(t/T*Math.PI);
+        t++;
+        y = 20 * Math.sin(t / T * Math.PI);
         geoObject.options.set('iconOffset', [0, -y]);
         if (t == T) {
           clearInterval(timer);
@@ -173,13 +174,13 @@ define('views/map', [
         }
       });
     },
-    initialize: function(){
+    initialize: function () {
       var _this = this;
       this.editing = function () {
         _this.geoObject.editor.stopEditing();
       };
     },
-    onBeforeDestroy: function(){
+    onBeforeDestroy: function () {
       var _this = this;
       if (this.geoObject) {
         map.geoObjects.remove(this.geoObject);
@@ -193,11 +194,12 @@ define('views/map', [
       var T = 25;
       var strokeWidth;
       var oldStrokeColor = geoObject.options.get('strokeWidth');
-      function frame() {
-        t ++;
 
-        strokeWidth = parseInt(3*Math.sin(t/T*Math.PI));
-        geoObject.options.set('strokeWidth', oldStrokeColor+strokeWidth);
+      function frame() {
+        t++;
+
+        strokeWidth = parseInt(3 * Math.sin(t / T * Math.PI));
+        geoObject.options.set('strokeWidth', oldStrokeColor + strokeWidth);
 
         if (t == T) {
           clearInterval(timer);
@@ -249,8 +251,63 @@ define('views/map', [
     }
   });
 
+  var WakeObjectsView = marionette.ItemView.extend({
+    addPlacesToCluster: function () {
+      var placemark_list = [];
+      var coord, data, game, idx, location, _i, _j, _len, _len1, _ref, _ref1;
+
+      for (game in wake) {
+        _ref = wake[game].locations;
+        for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+          location = _ref[_i];
+          _ref1 = location.coords;
+          for (_j = 0, _len1 = _ref1.length; _j < _len1; _j++) {
+            coord = _ref1[_j];
+            idx = game + '|' + _i + '|' + _j;
+            data = {
+              name: location.name,
+              coords: coord,
+              codes: location.codes,
+              complexity: location.complexity
+            };
+
+            var prefs = {
+              balloonContentHeader: location.name,
+              balloonContentBody: '',
+              balloonContentFooter: ''
+            };
+            var style = {
+              preset: 'islands#circleDotIcon',
+              iconColor: '#1faee9'
+            };
+            var placemark = new ymaps.Placemark(coord, prefs, style);
+            placemark_list.push(placemark);
+
+          }
+        }
+      }
+
+      this.clusterer.add(placemark_list);
+    },
+
+    render: function () {
+      this.clusterer = new ymaps.Clusterer({
+        preset: 'twirl#invertedVioletClusterIcons',
+        groupByCoordinates: false,
+        gridSize: 250
+      });
+      this.addPlacesToCluster();
+
+      map.geoObjects.add(this.clusterer);
+    },
+    destroy: function(){
+      map.geoObjects.remove(this.clusterer);
+    }
+  });
+
   return {
-    MapObjectsView: MapObjectsView
+    MapObjectsView: MapObjectsView,
+    WakeObjectsView: WakeObjectsView
   }
 })
 ;

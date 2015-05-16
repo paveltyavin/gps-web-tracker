@@ -23,30 +23,55 @@ button:focus {
     width: 260px;
     box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
 }
-.panelInner{
+
+#wakeOn {
+    position: fixed;
+    left: 10px;
+    bottom: 10px;
+    width: 40px;
+    height: 40px;
+    background-color: #fff;
+    border-radius: 2px;
+    box-shadow: 0 0 4px rgba(0, 0, 0, 0.5);
+}
+#wakeOn.active{
+    background-color: #ccc;
+}
+
+#wakeOn div {
+    margin-left: 5px;
+    margin-top: 10px;
+    cursor: pointer;
+}
+
+.panelInner {
     max-height: 500px;
     overflow-y: scroll;
 }
 
-#panelBottom{
+#panelBottom {
     position: fixed;
-    bottom:0;
+    bottom: 0;
     background-color: #fff;
     height: 34px;
     text-align: center;
     display: none;
     width: 100%;
 }
-.panelBottomInner{
+
+.panelBottomInner {
     padding-top: 4px;
     padding-bottom: 4px;
 }
-.panelBottomInner input[type=text]{
-    width:150px;
+
+.panelBottomInner input[type=text] {
+    width: 150px;
 }
-.panelBottomInner input[type=checkbox]{
-    width:20px;
+
+.panelBottomInner input[type=checkbox] {
+    width: 20px;
 }
+
 .icon {
     display: inline-block;
     vertical-align: middle;
@@ -168,11 +193,10 @@ input[type=text] {
     top: 9px;
 }
 
-
 .diagonal-line {
-    height:2px;
+    height: 2px;
     margin-top: 9px;
-    background:#000;
+    background: #000;
     -moz-transform: scale(1) rotate(-45deg) translateX(0px) translateY(0px) skewX(0deg) skewY(0deg);
     -webkit-transform: scale(1) rotate(-45deg) translateX(0px) translateY(0px) skewX(0deg) skewY(0deg);
     -o-transform: scale(1) rotate(-45deg) translateX(0px) translateY(0px) skewX(0deg) skewY(0deg);

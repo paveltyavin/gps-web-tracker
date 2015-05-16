@@ -67,7 +67,7 @@ define('app', [
           _this.panelRegion.show(_this.panelObjectsView);
         }
 
-        if (isMobile.any && false){
+        if (isMobile.any && false) {
           $('#panelBottom').css('display', 'block');
           _this.addRegions({
             panelBottomRegion: "#panelBottom"
@@ -82,6 +82,17 @@ define('app', [
       });
       socket.on('disconnect', function () {
         _this.panelRegion.empty();
+      });
+
+      _this.wakeObjectsView = new mapViews.WakeObjectsView({});
+
+      $('#wakeOn').on('click', function(){
+        $('#wakeOn').toggleClass('active');
+        if ($('#wakeOn').hasClass('active')){
+          _this.wakeObjectsView.render()
+        } else {
+          _this.wakeObjectsView.destroy();
+        }
       });
     },
 
