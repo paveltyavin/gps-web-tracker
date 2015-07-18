@@ -1,5 +1,6 @@
 var config = require('./config');
 var logger = require('./logger');
+var url = require('url');
 var _ = require('underscore');
 var jot = require('json-over-tcp');
 var io = require('socket.io');
@@ -16,7 +17,7 @@ var PointSchema = new Schema({
   id: String,
   lng: Number,
   lat: Number,
-  modified: { type: Date, default: Date.now }
+  modified: {type: Date, default: Date.now}
 });
 var Point = mongoose.model('points', PointSchema);
 
@@ -40,7 +41,6 @@ var Line = mongoose.model('line', LineSchema);
 // Create server for devices
 var deviceServer = jot.createServer(config.devicePort);
 deviceServer.on('connection', function (socket) {
-  logger.log('debug', 'deviceServer connection');
   socket.on('data', function (data) {
     logger.log('debug', 'device message: ', data);
     data.modified = new Date();
@@ -51,11 +51,9 @@ deviceServer.on('connection', function (socket) {
           doc.lng = data.lng;
           doc.modified = data.modified;
           doc.save();
-          logger.log('debug', 'old Point', data);
         } else {
           var point = new Point(data);
           point.save();
-          logger.log('debug', 'new Point', data);
         }
       });
       browserServer.emit('set:point', data);
@@ -67,6 +65,36 @@ deviceServer.listen(config.devicePort);
 
 var app = http.createServer();
 app.listen(config.browserPort);
+
+http.createServer(function (request, response) {
+  response.writeHead(200, {'Content-Type': 'text/plain'});
+  var url_parts = url.parse(request.url, true);
+
+  var data = {
+    modified: new Date(),
+    lat: url_parts.latitude,
+    lng: url_parts.longitude,
+    id: url_parts.trackid
+  };
+
+  if ((data.lat) && (data.lng) && (data.id)) {
+    Point.findOne({id: data.id}, function (err, doc) {
+      if (doc) {
+        doc.lat = data.lat;
+        doc.lng = data.lng;
+        doc.modified = data.modified;
+        doc.save();
+      } else {
+        var point = new Point(data);
+        point.save();
+      }
+    });
+    browserServer.emit('set:point', data);
+  }
+
+  logger.log('debug', 'cords url_parts', url_parts);
+  response.end('Hello World\n');
+}).listen(9201);
 
 var getModel = function (modelName) {
   var Model;
@@ -99,7 +127,6 @@ var getAddFunction = function (modelName, socket) {
         object.save();
       }
 
-      logger.log('debug', 'add objectId: ', objectId);
       socket.broadcast.emit('add:' + modelName, object);
     });
 
@@ -114,10 +141,7 @@ var getUpdateFunction = function (modelName, socket) {
       delete data._id;
     }
     Model.update({id: objectId}, data, {}, function (err, docs) {
-      logger.log('debug', docs);
     });
-    logger.log('debug', 'update ' + modelName + 'Id: ', objectId, 'data: ', data);
-    logger.log('debug', 'update ' + modelName + 'Id: ', objectId);
     socket.broadcast.emit('update:' + modelName, data);
   }
 };
@@ -131,14 +155,12 @@ var getDeleteFunction = function (modelName, socket) {
     }
     Model.remove({id: objectId}, function () {
     });
-    logger.log('debug', 'delete ' + modelName + 'Id: ', objectId);
     socket.broadcast.emit('delete:' + modelName, objectId);
   }
 };
 
 var getHighlightFunction = function (modelName, socket) {
   return function (objectId) {
-    logger.log('debug', 'highlight ' + modelName + 'Id: ', objectId);
     socket.broadcast.emit('highlight:' + modelName, objectId);
   }
 };
@@ -146,9 +168,6 @@ var getHighlightFunction = function (modelName, socket) {
 setInterval(function () {
   var old_date = new Date(new Date() - config.pointTTL);
   Point.remove({modified: {$not: {$gt: old_date}}}, function (err, docs) {
-    if (docs){
-      logger.log('debug', 'remove points');
-    }
   });
 }, config.pointCheckTime);
 
@@ -160,7 +179,6 @@ var browserServer = io(app, {
 
 
 browserServer.on('connection', function (socket) {
-  logger.log('debug', 'browserServer connection');
   socket.on('add:marker', getAddFunction('marker', socket));
   socket.on('add:line', getAddFunction('line', socket));
 
