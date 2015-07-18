@@ -2,6 +2,7 @@ var config = require('./config');
 var logger = require('./logger');
 var url = require('url');
 var _ = require('underscore');
+var express = require('express');
 var jot = require('json-over-tcp');
 var io = require('socket.io');
 var http = require('http');
@@ -66,15 +67,14 @@ deviceServer.listen(config.devicePort);
 var app = http.createServer();
 app.listen(config.browserPort);
 
-http.createServer(function (request, response) {
-  response.writeHead(200, {'Content-Type': 'text/plain'});
-  var url_parts = url.parse(request.url, true);
-
+// Create server for http messages from devices
+var http_devices_app = express();
+http_devices_app.get('/', function (request, response) {
   var data = {
     modified: new Date(),
-    lat: url_parts.latitude,
-    lng: url_parts.longitude,
-    id: url_parts.trackid
+    lat: request.query.latitude,
+    lng: request.query.longitude,
+    id: request.query.trackid
   };
 
   if ((data.lat) && (data.lng) && (data.id)) {
@@ -89,11 +89,10 @@ http.createServer(function (request, response) {
         point.save();
       }
     });
+    logger.log('debug', 'http_devices_app data = ', data);
     browserServer.emit('set:point', data);
   }
-
-  logger.log('debug', 'cords url_parts', url_parts);
-  response.end('Hello World\n');
+  response.send('ok\n');
 }).listen(9201);
 
 var getModel = function (modelName) {
