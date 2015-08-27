@@ -77,6 +77,8 @@ http_devices_app.get('/', function (request, response) {
     id: request.query.username
   };
 
+  logger.log('debug', 'http_devices_app data = ', data);
+
   if ((data.lat) && (data.lng) && (data.id)) {
     Point.findOne({id: data.id}, function (err, doc) {
       if (doc) {
