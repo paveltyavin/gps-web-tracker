@@ -74,10 +74,8 @@ http_devices_app.get('/', function (request, response) {
     modified: new Date(),
     lat: request.query.latitude,
     lng: request.query.longitude,
-    id: request.query.trackid
+    id: request.query.username
   };
-
-  logger.log('debug', 'http_devices_app data = ', data);
 
   if ((data.lat) && (data.lng) && (data.id)) {
     Point.findOne({id: data.id}, function (err, doc) {
