@@ -13,6 +13,8 @@ mongoose.connect('mongodb://127.0.0.1:27017/gps-web-tracker', function (error) {
   }
 });
 
+console.log('Start server application');
+
 var Schema = mongoose.Schema;
 var PointSchema = new Schema({
   id: String,
