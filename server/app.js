@@ -74,9 +74,9 @@ var http_devices_app = express();
 http_devices_app.get('/', function (request, response) {
   var data = {
     modified: new Date(),
-    lat: request.query.latitude,
-    lng: request.query.longitude,
-    id: request.query.username
+    lat: request.query.latitude || request.query.lat,
+    lng: request.query.longitude || request.query.lon,
+    id: request.query.username || request.query.deviceid.slice(-6, -1)
   };
 
   logger.log('debug', 'http_devices_app data = ', data);
